@@ -62,7 +62,7 @@ To test the pre-trained DOVER on multiple datasets, please run the following she
 
 ### Divergence Maps
 
-Please follow the instructions in [Generate_Divergence_Maps_and_gMAD.ipynb] to generate them.
+Please follow the instructions in [Generate_Divergence_Maps_and_gMAD.ipynb](Generate_Divergence_Maps_and_gMAD.ipynb) to generate them.
 You can also get to visualize the videos (but you need to download the data first).
 
 ### WandB Training and Evaluation Curves
