@@ -1,13 +1,17 @@
 # DOVER: the Disentangled Objective Video Quality Evaluator
 
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER) 
+
 *Should be some papers-with-code banner here as it is SOTA...but due to "some" regulations we will do this later...*
 
 The first attempt to disentangle the VQA problem.
 Official code for paper *"Disentangling Aesthetic and Technical Effects for Video Quality Assessment of User Generated Content"*.
 
-Temporary paper link: [here](https://github.com/teowu/DOVER/releases/download/v0.1.0/Preprint_Paper.pdf).
-Arxiv paper link: will be ready for view on Nov. 11.
-Extended paper with appendix link: will be ready for view on Nov. 18.
+:sparkles: Pre-Print Paper link: [here](https://github.com/teowu/DOVER/releases/download/v0.1.0/Preprint_Paper.pdf).
+
+:sparkles: Arxiv paper link: will be ready for view on Nov. 11.
+
+:sparkles: Extended paper with appendix link: will be ready for view on Nov. 18.
 
 
 
