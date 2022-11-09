@@ -1,4 +1,4 @@
-# DOVER: the {D}isentangled {O}bjective {V}ideo Quality {E}valuato{r}
+# DOVER: the Disentangled Objective Video Quality Evaluator
 
 *Should be some papers-with-code banner here as it is SOTA...but due to "some" regulations we will do this later...*
 
