@@ -8,7 +8,7 @@ batch_size: 16
 num_workers: 8
 
 wandb:
-    project_name: VQA_Experiments_2022
+    project_name: DOVER
 
 data:                   
     val-livevqc:
