@@ -24,9 +24,9 @@ Arxiv Paper Link will be here soon.
 
 The repository can be installed via the following commands:
 ```shell
-    git clone https://github.com/teowu/DOVER.git
-    cd DOVER
-    pip install .
+git clone https://github.com/teowu/DOVER.git \
+cd DOVER \
+pip install .
 ```
 
 ## Data Preparation
