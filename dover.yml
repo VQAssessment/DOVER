@@ -10,12 +10,11 @@ num_workers: 8
 wandb:
     project_name: VQA_Experiments_2022
 
-data:
-                    
+data:                   
     val-livevqc:
         type: ViewDecompositionDataset
         args:
-            weight: 0.701
+            weight: 0.612
             phase: test
             anno_file: ./examplar_data_labels/LIVE_VQC/labels.txt
             data_prefix: ../datasets/LIVE_VQC/

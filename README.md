@@ -13,11 +13,12 @@ Arxiv Paper Link will be here soon.
 
 ### Problem Definition
 
-![Fig](figs/approach.png)
-
 ![Fig](figs/problem_definition.png)
 
 ### the proposed DOVER
+
+
+![Fig](figs/approach.png)
 
 ## Install
 
@@ -74,9 +75,9 @@ and welcome to reproduce them!
 
 Directly training on LSVQ and testing on other datasets:
 
-| Name |  Pretrain   | Spatial Fragments | Temporal Fragments | PLCC@LSVQ_1080p | PLCC@LSVQ_test | PLCC@LIVE_VQC | PLCC@KoNViD | MACs | config | model |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-|  DOVER|  0.830 |  0.889  |   0.855 | 0.883   |  282G  |  [config](dover.yml)  | [github](https://github.com/teowu/DOVER/releases/download/v0.1.0/DOVER.pth) |
+|    | PLCC@LSVQ_1080p | PLCC@LSVQ_test | PLCC@LIVE_VQC | PLCC@KoNViD | MACs | config | model |
+| ----  |    ----   |   ---- |  ----   |    ----   | ----  |    ----   |   ---- | 
+|  DOVER |  0.830 |  0.889  |   0.855 | 0.883   |  282G  |  [config](dover.yml)  | [github](https://github.com/teowu/DOVER/releases/download/v0.1.0/DOVER.pth) |
 
 ### Representation-level Fusion
 
