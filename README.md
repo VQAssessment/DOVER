@@ -29,11 +29,13 @@ Official code for ArXiv Preprint Paper *"Disentangling Aesthetic and Technical E
 
 The repository can be installed via the following commands:
 ```shell
-git clone https://github.com/teowu/DOVER.git \
-cd DOVER \
-pip install . \ #stop here if you do not need pretrained weights, but why not?
-mkdir pretrained_weights \ 
-wget https://github.com/teowu/DOVER/releases/download/v0.1.0/DOVER.pth -> pretrained_weight
+git clone https://github.com/teowu/DOVER.git 
+cd DOVER 
+pip install .  #stop here if you do not need pretrained weights, but why not?
+mkdir pretrained_weights 
+cd pretrained_weights 
+wget https://github.com/teowu/DOVER/releases/download/v0.1.0/DOVER.pth 
+cd ..
 ```
 
 ## Judge the Quality of Any Video
