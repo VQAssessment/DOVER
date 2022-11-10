@@ -273,7 +273,7 @@ def spatial_temporal_view_decomposition(
 import numpy as np
 import random
 
-class NewSampleFrames:
+class UnifiedFrameSampler:
     def __init__(self, fsize_t, fragments_t, frame_interval=1, num_clips=1, drop_rate=0., ):
 
         self.fragments_t = fragments_t
@@ -351,10 +351,10 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
         for stype, sopt in opt["sample_types"].items():
             if "t_frag" not in sopt:
                 # resized temporal sampling for TQE in DOVER
-                self.samplers[stype] = NewSampleFrames(sopt["clip_len"], sopt["num_clips"], sopt["frame_interval"])
+                self.samplers[stype] = UnifiedFrameSampler(sopt["clip_len"], sopt["num_clips"], sopt["frame_interval"])
             else:
                 # temporal sampling for AQE in DOVER
-                self.samplers[stype] = NewSampleFrames(sopt["clip_len"] // sopt["t_frag"], sopt["t_frag"], sopt["frame_interval"], sopt["num_clips"])
+                self.samplers[stype] = UnifiedFrameSampler(sopt["clip_len"] // sopt["t_frag"], sopt["t_frag"], sopt["frame_interval"], sopt["num_clips"])
             print(stype+" branch sampled frames:", self.samplers[stype](240, self.phase == "train"))
         
         if isinstance(self.ann_file, list):

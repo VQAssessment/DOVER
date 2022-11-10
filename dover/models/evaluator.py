@@ -106,11 +106,10 @@ class DOVER(nn.Module):
             else:
                 self.vqa_head = VQAHead(**vqa_head)
 
-    def forward(self, vclips, inference=True, return_pooled_feats=False, reduce_scores=True, pooled=False, **kwargs):
-        if inference:
+    def forward(self, vclips, inference=True, return_pooled_feats=False, reduce_scores=False, pooled=False, **kwargs):
+        if inference:            
             self.eval()
             with torch.no_grad():
-                
                 scores = []
                 feats = {}
                 for key in vclips:

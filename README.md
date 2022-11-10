@@ -5,8 +5,8 @@
 :sparkles: Arxiv Preprint Link: [abs](arxiv.org/abs/2211.04894), [pdf](arxiv.org/pdf/2211.04894).
 :sparkles: We will add an appendix about more technical details soon!
 
-The first attempt to disentangle the VQA problem.
-Official code for paper *"Disentangling Aesthetic and Technical Effects for Video Quality Assessment of User Generated Content"*.
+The first attempt to disentangle the VQA problem into aesthetic and technical quality evaluations.
+Official code for ArXiv Preprint Paper *"Disentangling Aesthetic and Technical Effects for Video Quality Assessment of User Generated Content"*.
 
 
 
@@ -31,23 +31,77 @@ The repository can be installed via the following commands:
 ```shell
 git clone https://github.com/teowu/DOVER.git \
 cd DOVER \
-pip install .
+pip install . \ #stop here if you do not need pretrained weights, but why not?
+mkdir pretrained_weights \ 
+wget https://github.com/teowu/DOVER/releases/download/v0.1.0/DOVER.pth -> pretrained_weight
 ```
+
+## Judge the Quality of Any Video
+
+### Try on Demos
+
+You can run a single command to judge the quality of the demo videos in comparison with videos in VQA datasets.
+
+```shell
+    python evaluate_one_video.py -v ./demo/17734.mp4
+```
+
+or 
+
+```shell
+    python evaluate_one_video.py -v ./demo/1724.mp4
+```
+
+### Evaluate on your customized videos
+
+
+Or choose any video you like to predict its quality:
+
+
+```shell
+    python evaluate_one_video.py -v $YOUR_SPECIFIED_VIDEO_PATH$
+```
+
+### Outputs
+
+You should get some outputs as follows. As different datasets have different scales, an absolute video quality score is useless, but the comparison on both **aesthetic** and **techincal quality** between the input video and all videos in specific sets are good indicators for how good the quality of the video is.
+
+In the current version, you can get the analysis of the video's quality as follows (the normalized scores are following `N(0,1)`, so you can expect scores > 0 are related to better quality).
+
+
+```
+Compared with all videos in the LIVE_VQC dataset:
+-- the technical quality of video [./demo/17734.mp4] is better than 40% of videos, with normalized score 0.02.
+-- the aesthetic quality of video [./demo/17734.mp4] is better than 64% of videos, with normalized score 0.50.
+Compared with all videos in the KoNViD-1k dataset:
+-- the technical quality of video [./demo/17734.mp4] is better than 72% of videos, with normalized score 0.70.
+-- the aesthetic quality of video [./demo/17734.mp4] is better than 91% of videos, with normalized score 1.20.
+Compared with all videos in the LSVQ_Test dataset:
+-- the technical quality of video [./demo/17734.mp4] is better than 67% of videos, with normalized score 0.52.
+-- the aesthetic quality of video [./demo/17734.mp4] is better than 78% of videos, with normalized score 0.84.
+Compared with all videos in the LSVQ_1080P dataset:
+-- the technical quality of video [./demo/17734.mp4] is better than 50% of videos, with normalized score 0.18.
+-- the aesthetic quality of video [./demo/17734.mp4] is better than 54% of videos, with normalized score 0.24.
+```
+
 
 ## Data Preparation
 
 We have already converted the labels for every dataset you will need for Blind Video Quality Assessment,
 and the download links for the videos are as follows:
 
-LSVQ: [Github](https://github.com/baidut/PatchVQ)
-KoNViD-1k: [Official Site](http://database.mmsp-kn.de/konvid-1k-database.html)
-LIVE-VQC: [Official Site](http://live.ece.utexas.edu/research/LIVEVQC)
-YouTube-UGC: [Official Site](https://media.withyoutube.com)
+:book: LSVQ: [Github](https://github.com/baidut/PatchVQ)
+
+:book: KoNViD-1k: [Official Site](http://database.mmsp-kn.de/konvid-1k-database.html)
+
+:book: LIVE-VQC: [Official Site](http://live.ece.utexas.edu/research/LIVEVQC)
+
+:book: YouTube-UGC: [Official Site](https://media.withyoutube.com)
 
 After downloading, kindly put them under the `../datasets` or anywhere but remember to change the `data_prefix` in the [config file](dover.yml).
 
 
-## Default Inference
+## Dataset-wise Default Inference
 
 To test the pre-trained DOVER on multiple datasets, please run the following shell command:
 
@@ -97,7 +151,8 @@ Transfer learning on smaller datasets:
 
 ## Acknowledgement
 
-Thanks @annanwangdaniel for developing the interfaces for subjective studies.
+Thanks for [Annan Wang](https://github.com/AnnanWangDaniel) for developing the interfaces for subjective studies.
+Thanks for every participant of the studies!
 
 ## Citation
 

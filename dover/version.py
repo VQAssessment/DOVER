@@ -1,4 +1,4 @@
-__version__ = "0.1.0-prepublish"
+__version__ = "0.1.0"
 
 
 def parse_version_info(version_str):
