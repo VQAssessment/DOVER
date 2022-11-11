@@ -2,15 +2,17 @@
 
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER) 
 
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-konvid-1k)](https://paperswithcode.com/sota/video-quality-assessment-on-konvid-1k?p=disentangling-aesthetic-and-technical-effects)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-live-fb-lsvq)](https://paperswithcode.com/sota/video-quality-assessment-on-live-fb-lsvq?p=disentangling-aesthetic-and-technical-effects)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-live-vqc)](https://paperswithcode.com/sota/video-quality-assessment-on-live-vqc?p=disentangling-aesthetic-and-technical-effects)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-youtube-ugc)](https://paperswithcode.com/sota/video-quality-assessment-on-youtube-ugc?p=disentangling-aesthetic-and-technical-effects)
+
+
 :sparkles: Arxiv Preprint Link: [abs](arxiv.org/abs/2211.04894), [pdf](arxiv.org/pdf/2211.04894).
 :sparkles: We will add an appendix about more technical details soon!
 
 The first attempt to disentangle the VQA problem into aesthetic and technical quality evaluations.
 Official code for ArXiv Preprint Paper *"Disentangling Aesthetic and Technical Effects for Video Quality Assessment of User Generated Content"*.
-
-
-
-
 
 
 
@@ -73,17 +75,20 @@ In the current version, you can get the analysis of the video's quality as follo
 
 ```
 Compared with all videos in the LIVE_VQC dataset:
--- the technical quality of video [./demo/17734.mp4] is better than 40% of videos, with normalized score 0.02.
--- the aesthetic quality of video [./demo/17734.mp4] is better than 64% of videos, with normalized score 0.50.
+-- the technical quality of video [./demo/17734.mp4] is better than 43% of videos, with normalized score 0.10.
+-- the aesthetic quality of video [./demo/17734.mp4] is better than 64% of videos, with normalized score 0.51.
 Compared with all videos in the KoNViD-1k dataset:
--- the technical quality of video [./demo/17734.mp4] is better than 72% of videos, with normalized score 0.70.
--- the aesthetic quality of video [./demo/17734.mp4] is better than 91% of videos, with normalized score 1.20.
+-- the technical quality of video [./demo/17734.mp4] is better than 75% of videos, with normalized score 0.77.
+-- the aesthetic quality of video [./demo/17734.mp4] is better than 91% of videos, with normalized score 1.21.
 Compared with all videos in the LSVQ_Test dataset:
--- the technical quality of video [./demo/17734.mp4] is better than 67% of videos, with normalized score 0.52.
--- the aesthetic quality of video [./demo/17734.mp4] is better than 78% of videos, with normalized score 0.84.
+-- the technical quality of video [./demo/17734.mp4] is better than 69% of videos, with normalized score 0.59.
+-- the aesthetic quality of video [./demo/17734.mp4] is better than 79% of videos, with normalized score 0.85.
 Compared with all videos in the LSVQ_1080P dataset:
--- the technical quality of video [./demo/17734.mp4] is better than 50% of videos, with normalized score 0.18.
--- the aesthetic quality of video [./demo/17734.mp4] is better than 54% of videos, with normalized score 0.24.
+-- the technical quality of video [./demo/17734.mp4] is better than 53% of videos, with normalized score 0.25.
+-- the aesthetic quality of video [./demo/17734.mp4] is better than 54% of videos, with normalized score 0.25.
+Compared with all videos in the YouTube_UGC dataset:
+-- the technical quality of video [./demo/17734.mp4] is better than 71% of videos, with normalized score 0.65.
+-- the aesthetic quality of video [./demo/17734.mp4] is better than 80% of videos, with normalized score 0.86.
 ```
 
 
