@@ -1,11 +1,18 @@
 # DOVER: the Disentangled Objective Video Quality Evaluator
 
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER) 
+
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER)
+[![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/teowu/DOVER)
+<a href="https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
+
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-konvid-1k)](https://paperswithcode.com/sota/video-quality-assessment-on-konvid-1k?p=disentangling-aesthetic-and-technical-effects)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-live-fb-lsvq)](https://paperswithcode.com/sota/video-quality-assessment-on-live-fb-lsvq?p=disentangling-aesthetic-and-technical-effects)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-live-vqc)](https://paperswithcode.com/sota/video-quality-assessment-on-live-vqc?p=disentangling-aesthetic-and-technical-effects)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-youtube-ugc)](https://paperswithcode.com/sota/video-quality-assessment-on-youtube-ugc?p=disentangling-aesthetic-and-technical-effects)
+
+Thanks so much for @TaskswithCode to generate a Colab demo page for us based on our `evaluate_one_video.py`:
+[Colab](https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb)
 
 
 :sparkles: Arxiv Preprint Link: [abs](arxiv.org/abs/2211.04894), [pdf](arxiv.org/pdf/2211.04894).
