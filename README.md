@@ -176,6 +176,7 @@ Should you find this work interesting and would like to cite this, please feel f
 @article{wu2022disentanglevqa,
   title={Disentangling Aesthetic and Technical Effects for Video Quality Assessment of User Generated Content},
   author={Wu, Haoning and Liao, Liang and Chen, Chaofeng and Hou, Jingwen and Wang, Annan and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
+  journal={arXiv preprint arXiv:2211.04894},
   year={2022}
 }
 ```
