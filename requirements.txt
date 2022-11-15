@@ -10,5 +10,5 @@ timm
 einops
 wandb
 scikit-video
-thop
+thop==0.0.31-2005241907
 onnx
