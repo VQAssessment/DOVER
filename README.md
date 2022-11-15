@@ -98,6 +98,14 @@ Compared with all videos in the YouTube_UGC dataset:
 -- the aesthetic quality of video [./demo/17734.mp4] is better than 80% of videos, with normalized score 0.86.
 ```
 
+## Evaluate on a Set of Unlabelled Videos
+
+
+```shell
+    python evaluate_a_set_of_videos.py -dir $YOUR_SPECIFID_DIR$
+```
+
+The results are stored as pickle files in dover_predictions with prefix `val-custom_`.
 
 ## Data Preparation
 
