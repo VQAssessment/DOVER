@@ -6,7 +6,6 @@ from functools import partial, reduce
 from .swin_backbone import SwinTransformer3D as VideoBackbone
 from .swin_backbone import swin_3d_tiny, swin_3d_small
 from .conv_backbone import convnext_3d_tiny, convnext_3d_small
-from .xclip_backbone import build_x_clip_model
 from .swin_backbone import SwinTransformer2D as ImageBackbone
 from .head import VQAHead, IQAHead, VARHead
 
@@ -82,7 +81,8 @@ class DOVER(nn.Module):
             elif t_backbone_size == 'conv_small':
                 b = convnext_3d_small(pretrained=True)
             elif t_backbone_size == 'xclip':
-                b = build_x_clip_model(**backbone[key])
+                raise NotImplementedError
+                #b = build_x_clip_model(**backbone[key])
             else:
                 raise NotImplementedError
             print("Setting backbone:", key+"_backbone")
