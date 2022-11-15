@@ -14,7 +14,7 @@ data:
     val-livevqc:
         type: ViewDecompositionDataset
         args:
-            weight: 0.612
+            weight: 0.598
             phase: test
             anno_file: ./examplar_data_labels/LIVE_VQC/labels.txt
             data_prefix: ../datasets/LIVE_VQC/
