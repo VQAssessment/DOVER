@@ -1,4 +1,4 @@
-# DOVER
+# :1st_place_medal:DOVER
 
 Official Codes, Demos, Models for the Disentangled Objective Video Quality Evaluator (DOVER)
 
