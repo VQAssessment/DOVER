@@ -1,5 +1,4 @@
-
-## DOVER
+# DOVER
 
 Official Codes, Demos, Models for the Disentangled Objective Video Quality Evaluator (DOVER)
 
@@ -8,19 +7,18 @@ Official Codes, Demos, Models for the Disentangled Objective Video Quality Evalu
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/teowu/DOVER)
 <a href="https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
 
-:sparkles: Our appendix for ***more visualized results*** are added in our updated version of Arxiv Preprint (20 pages, 19 figures)! [pdf](arxiv.org/pdf/2211.04894)
-
-
-![Fig](figs/in_the_wild_on_kinetics.png)
-
-Corresponding video results can be found [here](https://github.com/teowu/DOVER/figs).
-
+:sparkles: Our appendix for ***more visualized results*** are added in our [Arxiv Preprint](arxiv.org/pdf/2211.04894) (20 pages, 19 figures)!
 
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-konvid-1k)](https://paperswithcode.com/sota/video-quality-assessment-on-konvid-1k?p=disentangling-aesthetic-and-technical-effects)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-live-fb-lsvq)](https://paperswithcode.com/sota/video-quality-assessment-on-live-fb-lsvq?p=disentangling-aesthetic-and-technical-effects)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-live-vqc)](https://paperswithcode.com/sota/video-quality-assessment-on-live-vqc?p=disentangling-aesthetic-and-technical-effects)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-youtube-ugc)](https://paperswithcode.com/sota/video-quality-assessment-on-youtube-ugc?p=disentangling-aesthetic-and-technical-effects)
+
+
+![Fig](figs/in_the_wild_on_kinetics.png)
+
+Corresponding video results can be found [here](https://github.com/teowu/DOVER/figs).
 
 
 The first attempt to disentangle the VQA problem into aesthetic and technical quality evaluations.
@@ -184,7 +182,7 @@ Thanks for every participant of the studies!
 
 ## Citation
 
-Should you find this work interesting and would like to cite this, please feel free to add these in your papers!
+Should you find our works interesting and would like to cite them, please feel free to add these in your references!
 
 ```bibtex
 @article{wu2022disentanglevqa,
@@ -192,5 +190,19 @@ Should you find this work interesting and would like to cite this, please feel f
   author={Wu, Haoning and Liao, Liang and Chen, Chaofeng and Hou, Jingwen and Wang, Annan and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
   journal={arXiv preprint arXiv:2211.04894},
   year={2022}
+}
+
+@article{wu2022fastquality,
+  title={FAST-VQA: Efficient End-to-end Video Quality Assessment with Fragment Sampling},
+  author={Wu, Haoning and Chen, Chaofeng and Hou, Jingwen and Liao, Liang and Wang, Annan and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
+  journal={Proceedings of European Conference of Computer Vision (ECCV)},
+  year={2022}
+}
+
+@misc{end2endvideoqualitytool,
+  title = {Open Source Deep End-to-End Video Quality Assessment Toolbox},
+  author = {Wu, Haoning},
+  year = {2022},
+  url = {http://github.com/timothyhtimothy/fast-vqa}
 }
 ```
