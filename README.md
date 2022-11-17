@@ -1,9 +1,20 @@
-# DOVER: the Disentangled Objective Video Quality Evaluator
+
+## DOVER
+
+Official Codes, Demos, Models for the Disentangled Objective Video Quality Evaluator (DOVER)
 
 
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER)
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/teowu/DOVER)
 <a href="https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
+
+:sparkles: Our appendix for ***more visualized results*** are added in our updated version of Arxiv Preprint (20 pages, 19 figures)! [pdf](arxiv.org/pdf/2211.04894)
+
+
+![Fig](figs/in_the_wild_on_kinetics.png)
+
+Corresponding video results can be found [here](https://github.com/teowu/DOVER/figs).
+
 
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-konvid-1k)](https://paperswithcode.com/sota/video-quality-assessment-on-konvid-1k?p=disentangling-aesthetic-and-technical-effects)
@@ -11,12 +22,6 @@
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-live-vqc)](https://paperswithcode.com/sota/video-quality-assessment-on-live-vqc?p=disentangling-aesthetic-and-technical-effects)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-youtube-ugc)](https://paperswithcode.com/sota/video-quality-assessment-on-youtube-ugc?p=disentangling-aesthetic-and-technical-effects)
 
-Thanks so much for @TaskswithCode to generate a Colab demo page for us based on our `evaluate_one_video.py`:
-[Colab](https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb)
-
-
-:sparkles: Arxiv Preprint Link: [abs](arxiv.org/abs/2211.04894), [pdf](arxiv.org/pdf/2211.04894).
-:sparkles: We will add an appendix about more technical details soon!
 
 The first attempt to disentangle the VQA problem into aesthetic and technical quality evaluations.
 Official code for ArXiv Preprint Paper *"Disentangling Aesthetic and Technical Effects for Video Quality Assessment of User Generated Content"*.
@@ -106,6 +111,7 @@ Compared with all videos in the YouTube_UGC dataset:
 ```
 
 The results are stored as pickle files in dover_predictions with prefix `val-custom_`.
+
 
 ## Data Preparation
 
