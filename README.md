@@ -7,7 +7,7 @@ Official Codes, Demos, Models for the Disentangled Objective Video Quality Evalu
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/QualityAssessment/DOVER)
 <a href="https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
 
-:sparkles: Our appendix for ***more visualized results*** are added in our [Arxiv Preprint](arxiv.org/pdf/2211.04894) (20 pages, 19 figures)!
+:sparkles: Our appendix for ***more visualized results*** are added in our [Arxiv Preprint](arxiv.org/pdf/2211.04894) (19 pages, 18 figures)!
 
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-konvid-1k)](https://paperswithcode.com/sota/video-quality-assessment-on-konvid-1k?p=disentangling-aesthetic-and-technical-effects)
