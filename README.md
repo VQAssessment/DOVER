@@ -4,7 +4,7 @@ Official Codes, Demos, Models for the Disentangled Objective Video Quality Evalu
 
 
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER)
-[![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/teowu/DOVER)
+[![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/QualityAssessment/DOVER)
 <a href="https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
 
 :sparkles: Our appendix for ***more visualized results*** are added in our [Arxiv Preprint](arxiv.org/pdf/2211.04894) (20 pages, 19 figures)!
@@ -18,7 +18,7 @@ Official Codes, Demos, Models for the Disentangled Objective Video Quality Evalu
 
 ![Fig](figs/in_the_wild_on_kinetics.png)
 
-Corresponding video results can be found [here](https://github.com/teowu/DOVER/figs).
+Corresponding video results can be found [here](https://github.com/QualityAssessment/DOVER/tree/master/figs).
 
 
 The first attempt to disentangle the VQA problem into aesthetic and technical quality evaluations.
