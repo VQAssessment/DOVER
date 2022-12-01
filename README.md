@@ -41,18 +41,19 @@ Official code for ArXiv Preprint Paper *"Disentangling Aesthetic and Technical E
 
 The repository can be installed via the following commands:
 ```shell
-git clone https://github.com/teowu/DOVER.git 
+git clone https://github.com/QualityAssessment/DOVER.git 
 cd DOVER 
 pip install .  #stop here if you do not need pretrained weights, but why not?
 mkdir pretrained_weights 
 cd pretrained_weights 
-wget https://github.com/teowu/DOVER/releases/download/v0.1.0/DOVER.pth 
+wget https://github.com/QualityAssessment/DOVER/releases/download/v0.1.0/DOVER.pth 
 cd ..
 ```
 
 ## Judge the Quality of Any Video
 
 ### Try on Demos
+
 
 You can run a single command to judge the quality of the demo videos in comparison with videos in VQA datasets.
 
@@ -65,6 +66,7 @@ or
 ```shell
     python evaluate_one_video.py -v ./demo/1724.mp4
 ```
+
 
 ### Evaluate on your customized videos
 
@@ -100,6 +102,15 @@ Compared with all videos in the YouTube_UGC dataset:
 -- the technical quality of video [./demo/17734.mp4] is better than 71% of videos, with normalized score 0.65.
 -- the aesthetic quality of video [./demo/17734.mp4] is better than 80% of videos, with normalized score 0.86.
 ```
+
+### New! Get the Fused Quality Score for Use!
+
+Simply add an `-f` argument, the script now can directly score the video's quality between [0,1].
+
+```shell
+    python evaluate_one_video.py -f -v $YOUR_SPECIFIED_VIDEO_PATH$
+```
+
 
 ## Evaluate on a Set of Unlabelled Videos
 
