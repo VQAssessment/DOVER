@@ -70,6 +70,8 @@ if __name__ == "__main__":
     dopt["data_prefix"] = args.video_dir
     
     dataset = ViewDecompositionDataset(dopt)
+    
+    
     dataloader = torch.utils.data.DataLoader(
             dataset,
             batch_size=1,
@@ -89,8 +91,10 @@ if __name__ == "__main__":
     sample_types = ["aesthetic", "technical"]
 
     for i, data in enumerate(tqdm(dataloader, desc="Testing")):
-        
-        ## tran
+        if len(data.keys()) == 1:
+            ##  failed data
+            continue
+
         video = {}
         for key in sample_types:
             if key in data:
@@ -111,7 +115,6 @@ if __name__ == "__main__":
             results = evaluator(video, reduce_scores=False)
             results = [np.mean(l.cpu().numpy()) for l in results]
 
-        #results = [r.mean().item() for r in evaluator(views)]
         rescaled_results = fuse_results(results)
         all_results[data["name"][0]] = rescaled_results
 

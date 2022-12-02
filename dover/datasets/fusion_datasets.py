@@ -407,28 +407,32 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
         video_info = self.video_infos[index]
         filename = video_info["filename"]
         label = video_info["label"]
-
-        ## Read Original Frames
-        ## Process Frames
-        data, frame_inds = spatial_temporal_view_decomposition(
-            filename,
-            self.sample_types,
-            self.samplers,
-            self.phase == "train",
-            self.augment and (self.phase == "train"),
-        )
-
-        for k, v in data.items():
-            data[k] = ((v.permute(1, 2, 3, 0) - self.mean) / self.std).permute(
-                3, 0, 1, 2
+        
+        try: 
+            ## Read Original Frames
+            ## Process Frames
+            data, frame_inds = spatial_temporal_view_decomposition(
+                filename,
+                self.sample_types,
+                self.samplers,
+                self.phase == "train",
+                self.augment and (self.phase == "train"),
             )
 
-        data["num_clips"] = {}
-        for stype, sopt in self.sample_types.items():
-            data["num_clips"][stype] = sopt["num_clips"]
-        data["frame_inds"] = frame_inds
-        data["gt_label"] = label
-        data["name"] = osp.basename(video_info["filename"])
+            for k, v in data.items():
+                data[k] = ((v.permute(1, 2, 3, 0) - self.mean) / self.std).permute(
+                    3, 0, 1, 2
+                )
+
+            data["num_clips"] = {}
+            for stype, sopt in self.sample_types.items():
+                data["num_clips"][stype] = sopt["num_clips"]
+            data["frame_inds"] = frame_inds
+            data["gt_label"] = label
+            data["name"] = osp.basename(video_info["filename"])
+        except:
+            # exception flow
+            return {"name": filename}
 
         return data
 
