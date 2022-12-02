@@ -1,25 +1,19 @@
-from timm.models.layers import trunc_normal_
-import torch
-from torch import nn
-
-from timm.models.layers import trunc_normal_
-from torch.utils.checkpoint import checkpoint_sequential
-
-import clip
-
-import numpy as np
-
 import copy
+import math
 from collections import OrderedDict
 from typing import Tuple, Union
-from timm.models.layers import trunc_normal_
+
+import clip
+import numpy as np
+import torch
 import torch.nn.functional as F
 from einops import rearrange
+from timm.models.layers import trunc_normal_
+from torch import nn
 from torch.utils.checkpoint import checkpoint_sequential
-import math
-import clip
 
-def drop_path(x, drop_prob: float = 0., training: bool = False):
+
+def drop_path(x, drop_prob: float = 0.0, training: bool = False):
     """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks).
     This is the same as the DropConnect impl I created for EfficientNet, etc networks, however,
     the original name is misleading as 'Drop Connect' is a different form of dropout in a separate paper...
@@ -27,24 +21,28 @@ def drop_path(x, drop_prob: float = 0., training: bool = False):
     changing the layer and argument names to 'drop path' rather than mix DropConnect as a layer name and use
     'survival rate' as the argument.
     """
-    if drop_prob == 0. or not training:
+    if drop_prob == 0.0 or not training:
         return x
     keep_prob = 1 - drop_prob
-    shape = (x.shape[0],) + (1,) * (x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
+    shape = (x.shape[0],) + (1,) * (
+        x.ndim - 1
+    )  # work with diff dim tensors, not just 2D ConvNets
     random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
     random_tensor.floor_()  # binarize
     output = x.div(keep_prob) * random_tensor
     return output
 
+
 class DropPath(nn.Module):
-    """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks).
-    """
+    """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
+
     def __init__(self, drop_prob=None):
         super(DropPath, self).__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x):
         return drop_path(x, self.drop_prob, self.training)
+
 
 class LayerNorm(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16."""
@@ -55,27 +53,45 @@ class LayerNorm(nn.LayerNorm):
         # return ret.type(orig_type)
         return super().forward(x)
 
+
 class QuickGELU(nn.Module):
     def forward(self, x: torch.Tensor):
         return x * torch.sigmoid(1.702 * x)
 
+
 class ResidualAttentionBlock(nn.Module):
-    def __init__(self, d_model: int, n_head: int, attn_mask: torch.Tensor = None, ):
+    def __init__(
+        self,
+        d_model: int,
+        n_head: int,
+        attn_mask: torch.Tensor = None,
+    ):
         super().__init__()
 
-        self.attn = nn.MultiheadAttention(d_model, n_head,)
+        self.attn = nn.MultiheadAttention(
+            d_model,
+            n_head,
+        )
         self.ln_1 = LayerNorm(d_model)
-        
-        self.mlp = nn.Sequential(OrderedDict([
-            ("c_fc", nn.Linear(d_model, d_model * 4)),
-            ("gelu", QuickGELU()),
-            ("c_proj", nn.Linear(d_model * 4, d_model))
-        ]))
+
+        self.mlp = nn.Sequential(
+            OrderedDict(
+                [
+                    ("c_fc", nn.Linear(d_model, d_model * 4)),
+                    ("gelu", QuickGELU()),
+                    ("c_proj", nn.Linear(d_model * 4, d_model)),
+                ]
+            )
+        )
         self.ln_2 = LayerNorm(d_model)
         self.attn_mask = attn_mask
 
     def attention(self, x: torch.Tensor):
-        self.attn_mask = self.attn_mask.to(dtype=x.dtype, device=x.device) if self.attn_mask is not None else None
+        self.attn_mask = (
+            self.attn_mask.to(dtype=x.dtype, device=x.device)
+            if self.attn_mask is not None
+            else None
+        )
         return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
 
     def forward(self, x: torch.Tensor):
@@ -83,26 +99,48 @@ class ResidualAttentionBlock(nn.Module):
         x = x + self.mlp(self.ln_2(x))
         return x
 
+
 class Transformer(nn.Module):
-    def __init__(self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None):
+    def __init__(
+        self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None
+    ):
         super().__init__()
         self.width = width
         self.layers = layers
-        self.resblocks = nn.Sequential(*[ResidualAttentionBlock(width, heads, attn_mask) for _ in range(layers)])
+        self.resblocks = nn.Sequential(
+            *[ResidualAttentionBlock(width, heads, attn_mask) for _ in range(layers)]
+        )
 
     def forward(self, x: torch.Tensor):
         return self.resblocks(x)
 
+
 class VisionTransformer(nn.Module):
-    def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: int, output_dim: int):
+    def __init__(
+        self,
+        input_resolution: int,
+        patch_size: int,
+        width: int,
+        layers: int,
+        heads: int,
+        output_dim: int,
+    ):
         super().__init__()
         self.input_resolution = input_resolution
         self.output_dim = output_dim
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=width, kernel_size=patch_size, stride=patch_size, bias=False)
+        self.conv1 = nn.Conv2d(
+            in_channels=3,
+            out_channels=width,
+            kernel_size=patch_size,
+            stride=patch_size,
+            bias=False,
+        )
 
         scale = width ** -0.5
         self.class_embedding = nn.Parameter(scale * torch.randn(width))
-        self.positional_embedding = nn.Parameter(scale * torch.randn((input_resolution // patch_size) ** 2 + 1, width))
+        self.positional_embedding = nn.Parameter(
+            scale * torch.randn((input_resolution // patch_size) ** 2 + 1, width)
+        )
         self.ln_pre = LayerNorm(width)
 
         self.transformer = Transformer(width, layers, heads)
@@ -114,7 +152,16 @@ class VisionTransformer(nn.Module):
         x = self.conv1(x)  # shape = [*, width, grid, grid]
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
         x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
-        x = torch.cat([self.class_embedding.to(x.dtype) + torch.zeros(x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device), x], dim=1)  # shape = [*, grid ** 2 + 1, width]
+        x = torch.cat(
+            [
+                self.class_embedding.to(x.dtype)
+                + torch.zeros(
+                    x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device
+                ),
+                x,
+            ],
+            dim=1,
+        )  # shape = [*, grid ** 2 + 1, width]
         x = x + self.positional_embedding.to(x.dtype)
         x = self.ln_pre(x)
 
@@ -128,21 +175,23 @@ class VisionTransformer(nn.Module):
             x = x @ self.proj
         return x
 
+
 class CLIP(nn.Module):
-    def __init__(self,
-                 embed_dim: int,
-                 # vision
-                 image_resolution: int,
-                 vision_layers: Union[Tuple[int, int, int, int], int],
-                 vision_width: int,
-                 vision_patch_size: int,
-                 # text
-                 context_length: int,
-                 vocab_size: int,
-                 transformer_width: int,
-                 transformer_heads: int,
-                 transformer_layers: int
-                 ):
+    def __init__(
+        self,
+        embed_dim: int,
+        # vision
+        image_resolution: int,
+        vision_layers: Union[Tuple[int, int, int, int], int],
+        vision_width: int,
+        vision_patch_size: int,
+        # text
+        context_length: int,
+        vocab_size: int,
+        transformer_width: int,
+        transformer_heads: int,
+        transformer_layers: int,
+    ):
         super().__init__()
 
         self.context_length = context_length
@@ -178,7 +227,9 @@ class CLIP(nn.Module):
         nn.init.normal_(self.token_embedding.weight, std=0.02)
         nn.init.normal_(self.positional_embedding, std=0.01)
 
-        proj_std = (self.transformer.width ** -0.5) * ((2 * self.transformer.layers) ** -0.5)
+        proj_std = (self.transformer.width ** -0.5) * (
+            (2 * self.transformer.layers) ** -0.5
+        )
         attn_std = self.transformer.width ** -0.5
         fc_std = (2 * self.transformer.width) ** -0.5
         for block in self.transformer.resblocks:
@@ -236,64 +287,106 @@ class CLIP(nn.Module):
         # shape = [global_batch_size, global_batch_size]
         return logits_per_image, logits_per_text
 
+
 class CrossFramelAttentionBlock(nn.Module):
-    def __init__(self, d_model: int, n_head: int, attn_mask: torch.Tensor = None, droppath = 0., T=0, ):
+    def __init__(
+        self,
+        d_model: int,
+        n_head: int,
+        attn_mask: torch.Tensor = None,
+        droppath=0.0,
+        T=0,
+    ):
         super().__init__()
         self.T = T
 
         self.message_fc = nn.Linear(d_model, d_model)
         self.message_ln = LayerNorm(d_model)
-        self.message_attn = nn.MultiheadAttention(d_model, n_head,)
-           
-        self.attn = nn.MultiheadAttention(d_model, n_head,)
+        self.message_attn = nn.MultiheadAttention(
+            d_model,
+            n_head,
+        )
+
+        self.attn = nn.MultiheadAttention(
+            d_model,
+            n_head,
+        )
         self.ln_1 = LayerNorm(d_model)
-        
-        self.drop_path = DropPath(droppath) if droppath > 0. else nn.Identity()
-        self.mlp = nn.Sequential(OrderedDict([
-            ("c_fc", nn.Linear(d_model, d_model * 4)),
-            ("gelu", QuickGELU()),
-            ("c_proj", nn.Linear(d_model * 4, d_model))
-        ]))
+
+        self.drop_path = DropPath(droppath) if droppath > 0.0 else nn.Identity()
+        self.mlp = nn.Sequential(
+            OrderedDict(
+                [
+                    ("c_fc", nn.Linear(d_model, d_model * 4)),
+                    ("gelu", QuickGELU()),
+                    ("c_proj", nn.Linear(d_model * 4, d_model)),
+                ]
+            )
+        )
         self.ln_2 = LayerNorm(d_model)
         self.attn_mask = attn_mask
 
     def attention(self, x: torch.Tensor):
-        self.attn_mask = self.attn_mask.to(dtype=x.dtype, device=x.device) if self.attn_mask is not None else None
+        self.attn_mask = (
+            self.attn_mask.to(dtype=x.dtype, device=x.device)
+            if self.attn_mask is not None
+            else None
+        )
         return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
-
 
     def forward(self, x):
         l, bt, d = x.size()
         b = bt // self.T
-        x = x.view(l, b, self.T, d) 
+        x = x.view(l, b, self.T, d)
 
-        msg_token = self.message_fc(x[0,:,:,:]) 
-        msg_token = msg_token.view(b, self.T, 1, d) 
-        
-        msg_token = msg_token.permute(1,2,0,3).view(self.T, b, d) 
-        msg_token = msg_token + self.drop_path(self.message_attn(self.message_ln(msg_token),self.message_ln(msg_token),self.message_ln(msg_token),need_weights=False)[0])
-        msg_token = msg_token.view(self.T, 1, b, d).permute(1,2,0,3)
-        
+        msg_token = self.message_fc(x[0, :, :, :])
+        msg_token = msg_token.view(b, self.T, 1, d)
+
+        msg_token = msg_token.permute(1, 2, 0, 3).view(self.T, b, d)
+        msg_token = msg_token + self.drop_path(
+            self.message_attn(
+                self.message_ln(msg_token),
+                self.message_ln(msg_token),
+                self.message_ln(msg_token),
+                need_weights=False,
+            )[0]
+        )
+        msg_token = msg_token.view(self.T, 1, b, d).permute(1, 2, 0, 3)
+
         x = torch.cat([x, msg_token], dim=0)
-        
-        x = x.view(l+1, -1, d)
+
+        x = x.view(l + 1, -1, d)
         x = x + self.drop_path(self.attention(self.ln_1(x)))
-        x = x[:l,:,:]
+        x = x[:l, :, :]
         x = x + self.drop_path(self.mlp(self.ln_2(x)))
         return x
 
 
 class Transformer(nn.Module):
-    def __init__(self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None, droppath=None, use_checkpoint=False, T=8):
+    def __init__(
+        self,
+        width: int,
+        layers: int,
+        heads: int,
+        attn_mask: torch.Tensor = None,
+        droppath=None,
+        use_checkpoint=False,
+        T=8,
+    ):
         super().__init__()
         self.use_checkpoint = use_checkpoint
         if droppath is None:
-            droppath = [0.0 for i in range(layers)] 
+            droppath = [0.0 for i in range(layers)]
         self.width = width
         self.layers = layers
-        
-        self.resblocks = nn.Sequential(*[CrossFramelAttentionBlock(width, heads, attn_mask, droppath[i], T) for i in range(layers)])
-       
+
+        self.resblocks = nn.Sequential(
+            *[
+                CrossFramelAttentionBlock(width, heads, attn_mask, droppath[i], T)
+                for i in range(layers)
+            ]
+        )
+
     def forward(self, x: torch.Tensor):
         if not self.use_checkpoint:
             return self.resblocks(x)
@@ -302,31 +395,55 @@ class Transformer(nn.Module):
 
 
 class CrossFrameCommunicationTransformer(nn.Module):
-    def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: int, output_dim: int,
-                 droppath = None, T = 8, use_checkpoint = False,):
+    def __init__(
+        self,
+        input_resolution: int,
+        patch_size: int,
+        width: int,
+        layers: int,
+        heads: int,
+        output_dim: int,
+        droppath=None,
+        T=8,
+        use_checkpoint=False,
+    ):
         super().__init__()
         self.input_resolution = input_resolution
         self.output_dim = output_dim
 
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=width, kernel_size=patch_size, stride=patch_size, bias=False)
+        self.conv1 = nn.Conv2d(
+            in_channels=3,
+            out_channels=width,
+            kernel_size=patch_size,
+            stride=patch_size,
+            bias=False,
+        )
 
         scale = width ** -0.5
         self.class_embedding = nn.Parameter(scale * torch.randn(width))
-        self.positional_embedding = nn.Parameter(scale * torch.randn((input_resolution // patch_size) ** 2 + 1, width))
+        self.positional_embedding = nn.Parameter(
+            scale * torch.randn((input_resolution // patch_size) ** 2 + 1, width)
+        )
         self.ln_pre = LayerNorm(width)
 
         ## Attention Blocks
-        self.transformer = Transformer(width, layers, heads, droppath=droppath, use_checkpoint=use_checkpoint, T=T,)
+        self.transformer = Transformer(
+            width,
+            layers,
+            heads,
+            droppath=droppath,
+            use_checkpoint=use_checkpoint,
+            T=T,
+        )
         self.ln_post = LayerNorm(width)
         self.proj = nn.Parameter(scale * torch.randn(width, output_dim))
-
 
     def init_weights(self):
         self.apply(self._init_weights)
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
+            trunc_normal_(m.weight, std=0.02)
             if isinstance(m, nn.Linear) and m.bias is not None:
                 nn.init.constant_(m.bias, 0)
         elif isinstance(m, nn.LayerNorm):
@@ -337,9 +454,18 @@ class CrossFrameCommunicationTransformer(nn.Module):
         x = self.conv1(x)  # shape = [*, width, grid, grid]
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
         x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
-        x = torch.cat([self.class_embedding.to(x.dtype) + torch.zeros(x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device), x], dim=1)  # shape = [*, grid ** 2 + 1, width]
+        x = torch.cat(
+            [
+                self.class_embedding.to(x.dtype)
+                + torch.zeros(
+                    x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device
+                ),
+                x,
+            ],
+            dim=1,
+        )  # shape = [*, grid ** 2 + 1, width]
         x = x + self.positional_embedding.to(x.dtype)
-        
+
         x = self.ln_pre(x)
 
         x = x.permute(1, 0, 2)
@@ -350,12 +476,20 @@ class CrossFrameCommunicationTransformer(nn.Module):
 
         if self.proj is not None:
             cls_x = cls_x @ self.proj
-        
-        return cls_x, x[:,1:,:]
+
+        return cls_x, x[:, 1:, :]
 
 
 class MulitHeadAttention(nn.Module):
-    def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
+    def __init__(
+        self,
+        dim,
+        num_heads=8,
+        qkv_bias=False,
+        qk_scale=None,
+        attn_drop=0.0,
+        proj_drop=0.0,
+    ):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
@@ -366,7 +500,6 @@ class MulitHeadAttention(nn.Module):
         self.k_proj = nn.Linear(dim, dim, bias=qkv_bias)
         self.v_proj = nn.Linear(dim, dim, bias=qkv_bias)
 
-
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
@@ -374,14 +507,26 @@ class MulitHeadAttention(nn.Module):
     def forward(self, q, k, v):
         B, N, C = q.shape
         B, M, C = k.shape
-        q = self.q_proj(q).reshape(B, N, self.num_heads, C // self.num_heads).permute(0,2,1,3)
-        k = self.k_proj(k).reshape(B, M, self.num_heads, C // self.num_heads).permute(0,2,1,3)
-        v = self.v_proj(v).reshape(B, M, self.num_heads, C // self.num_heads).permute(0,2,1,3)
+        q = (
+            self.q_proj(q)
+            .reshape(B, N, self.num_heads, C // self.num_heads)
+            .permute(0, 2, 1, 3)
+        )
+        k = (
+            self.k_proj(k)
+            .reshape(B, M, self.num_heads, C // self.num_heads)
+            .permute(0, 2, 1, 3)
+        )
+        v = (
+            self.v_proj(v)
+            .reshape(B, M, self.num_heads, C // self.num_heads)
+            .permute(0, 2, 1, 3)
+        )
 
         attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
-        
+
         x = (attn @ v).transpose(1, 2).reshape(B, N, C)
         x = self.proj(x)
         x = self.proj_drop(x)
@@ -393,7 +538,7 @@ class PromptGeneratorLayer(nn.Module):
         self,
         d_model,
         nhead,
-        dropout=0.,
+        dropout=0.0,
     ):
         super().__init__()
         self.cross_attn = MulitHeadAttention(d_model, nhead, proj_drop=dropout)
@@ -407,7 +552,7 @@ class PromptGeneratorLayer(nn.Module):
             nn.Linear(d_model, d_model * 4),
             QuickGELU(),
             nn.Dropout(dropout),
-            nn.Linear(d_model * 4, d_model)
+            nn.Linear(d_model * 4, d_model),
         )
 
     def forward(self, x, visual):
@@ -418,31 +563,38 @@ class PromptGeneratorLayer(nn.Module):
 
 
 class VideoSpecificPrompt(nn.Module):
-    def __init__(self, layers=2, embed_dim=512, alpha=0.1,):
+    def __init__(
+        self,
+        layers=2,
+        embed_dim=512,
+        alpha=0.1,
+    ):
         super().__init__()
         self.norm = nn.LayerNorm(embed_dim)
-        self.decoder = nn.ModuleList([PromptGeneratorLayer(embed_dim, embed_dim//64) for _ in range(layers)])
+        self.decoder = nn.ModuleList(
+            [PromptGeneratorLayer(embed_dim, embed_dim // 64) for _ in range(layers)]
+        )
         self.alpha = nn.Parameter(torch.ones(embed_dim) * alpha)
         self.apply(self._init_weights)
 
-
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
+            trunc_normal_(m.weight, std=0.02)
             if isinstance(m, nn.Linear) and m.bias is not None:
                 nn.init.constant_(m.bias, 0)
         elif isinstance(m, nn.LayerNorm):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
-    
     def forward(self, text, visual):
         B, N, C = visual.shape
         visual = self.norm(visual)
         for layer in self.decoder:
             text = layer(text, visual)
-        
+
+
 from collections import OrderedDict
+
 from timm.models.layers import trunc_normal_
 
 
@@ -452,16 +604,24 @@ class ResidualAttentionBlock(nn.Module):
 
         self.attn = nn.MultiheadAttention(d_model, n_head)
         self.ln_1 = nn.LayerNorm(d_model)
-        self.mlp = nn.Sequential(OrderedDict([
-            ("c_fc", nn.Linear(d_model, d_model * 4)),
-            ("gelu", QuickGELU()),
-            ("c_proj", nn.Linear(d_model * 4, d_model))
-        ]))
+        self.mlp = nn.Sequential(
+            OrderedDict(
+                [
+                    ("c_fc", nn.Linear(d_model, d_model * 4)),
+                    ("gelu", QuickGELU()),
+                    ("c_proj", nn.Linear(d_model * 4, d_model)),
+                ]
+            )
+        )
         self.ln_2 = nn.LayerNorm(d_model)
         self.attn_mask = attn_mask
 
     def attention(self, x: torch.Tensor):
-        self.attn_mask = self.attn_mask.to(dtype=x.dtype, device=x.device) if self.attn_mask is not None else None
+        self.attn_mask = (
+            self.attn_mask.to(dtype=x.dtype, device=x.device)
+            if self.attn_mask is not None
+            else None
+        )
         return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
 
     def forward(self, x: torch.Tensor):
@@ -471,16 +631,26 @@ class ResidualAttentionBlock(nn.Module):
 
 
 class MultiframeIntegrationTransformer(nn.Module):
-    def __init__(self, T, embed_dim=512, layers=1,):
+    def __init__(
+        self,
+        T,
+        embed_dim=512,
+        layers=1,
+    ):
         super().__init__()
         self.T = T
         transformer_heads = embed_dim // 64
         self.positional_embedding = nn.Parameter(torch.empty(1, T, embed_dim))
         trunc_normal_(self.positional_embedding, std=0.02)
-        self.resblocks = nn.Sequential(*[ResidualAttentionBlock(d_model=embed_dim, n_head=transformer_heads) for _ in range(layers)])
+        self.resblocks = nn.Sequential(
+            *[
+                ResidualAttentionBlock(d_model=embed_dim, n_head=transformer_heads)
+                for _ in range(layers)
+            ]
+        )
 
         self.apply(self._init_weights)
-    
+
     def _init_weights(self, m):
         if isinstance(m, (nn.Linear,)):
             trunc_normal_(m.weight, std=0.02)
@@ -495,47 +665,68 @@ class MultiframeIntegrationTransformer(nn.Module):
         x = x + self.positional_embedding
         x = x.permute(1, 0, 2)
         x = self.resblocks(x)
-        x = x.permute(1, 0, 2)  
+        x = x.permute(1, 0, 2)
         x = x.type(ori_x.dtype) + ori_x
-        
+
         return x.mean(dim=1, keepdim=False)
 
+
 class XCLIP(CLIP):
-    def __init__(self,
-                 embed_dim: int,
-                 # vision
-                 image_resolution: int,
-                 vision_layers: Union[Tuple[int, int, int, int], int],
-                 vision_width: int,
-                 vision_patch_size: int,
-                 # text
-                 context_length: int,
-                 vocab_size: int,
-                 transformer_width: int,
-                 transformer_heads: int,
-                 transformer_layers: int, 
-                 # video
-                 T=8, 
-                 droppath=0.,
-                 mit_layers=1,
-                 # prompt 
-                 prompts_alpha=1e-4,
-                 prompts_layers=1,
-                 # other
-                 use_cache=True,
-                 use_checkpoint=False,
-                 ):
+    def __init__(
+        self,
+        embed_dim: int,
+        # vision
+        image_resolution: int,
+        vision_layers: Union[Tuple[int, int, int, int], int],
+        vision_width: int,
+        vision_patch_size: int,
+        # text
+        context_length: int,
+        vocab_size: int,
+        transformer_width: int,
+        transformer_heads: int,
+        transformer_layers: int,
+        # video
+        T=8,
+        droppath=0.0,
+        mit_layers=1,
+        # prompt
+        prompts_alpha=1e-4,
+        prompts_layers=1,
+        # other
+        use_cache=True,
+        use_checkpoint=False,
+    ):
         super().__init__(
             embed_dim,
-            image_resolution, vision_layers, vision_width, vision_patch_size,
-            context_length, vocab_size, transformer_width, transformer_heads, transformer_layers
+            image_resolution,
+            vision_layers,
+            vision_width,
+            vision_patch_size,
+            context_length,
+            vocab_size,
+            transformer_width,
+            transformer_heads,
+            transformer_layers,
         )
-        
-        self.prompts_generator = VideoSpecificPrompt(layers=prompts_layers, embed_dim=embed_dim, alpha=prompts_alpha,)
-        self.use_cache=use_cache
-        self.mit = MultiframeIntegrationTransformer(T=T, embed_dim=embed_dim, layers=mit_layers,)
 
-        dpr = [x.item() for x in torch.linspace(0, droppath, vision_layers)] if droppath > 0. else None
+        self.prompts_generator = VideoSpecificPrompt(
+            layers=prompts_layers,
+            embed_dim=embed_dim,
+            alpha=prompts_alpha,
+        )
+        self.use_cache = use_cache
+        self.mit = MultiframeIntegrationTransformer(
+            T=T,
+            embed_dim=embed_dim,
+            layers=mit_layers,
+        )
+
+        dpr = (
+            [x.item() for x in torch.linspace(0, droppath, vision_layers)]
+            if droppath > 0.0
+            else None
+        )
 
         vision_heads = vision_width // 64
         self.visual = CrossFrameCommunicationTransformer(
@@ -554,11 +745,13 @@ class XCLIP(CLIP):
             width=transformer_width,
             layers=transformer_layers,
             heads=transformer_heads,
-            attn_mask=self.build_attention_mask()
+            attn_mask=self.build_attention_mask(),
         )
         self.vocab_size = vocab_size
         self.token_embedding = nn.Embedding(vocab_size, transformer_width)
-        self.positional_embedding = nn.Parameter(torch.empty(self.context_length, transformer_width))
+        self.positional_embedding = nn.Parameter(
+            torch.empty(self.context_length, transformer_width)
+        )
         self.ln_final = LayerNorm(transformer_width)
         self.text_projection = nn.Parameter(torch.empty(transformer_width, embed_dim))
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
@@ -566,12 +759,12 @@ class XCLIP(CLIP):
         self.cache_text_features = None
         self.prompts_visual_ln = LayerNorm(vision_width)
         self.prompts_visual_proj = nn.Parameter(torch.randn(vision_width, embed_dim))
-        
+
         self.initialize_parameters()
-    
+
     @torch.jit.ignore
     def no_weight_decay_keywords(self):
-        return {'positional_embedding'}
+        return {"positional_embedding"}
 
     def encode_image(self, image):
         return self.visual(image)
@@ -593,24 +786,24 @@ class XCLIP(CLIP):
         return x
 
     def encode_video(self, image):
-        b,t,c,h,w = image.size()
-        image = image.reshape(-1,c,h,w)
+        b, t, c, h, w = image.size()
+        image = image.reshape(-1, c, h, w)
 
         cls_features, img_features = self.encode_image(image)
         img_features = self.prompts_visual_ln(img_features)
         img_features = img_features @ self.prompts_visual_proj
-        
+
         cls_features = cls_features.view(b, t, -1)
-        img_features = img_features.view(b,t,-1,cls_features.shape[-1])
-        
+        img_features = img_features.view(b, t, -1, cls_features.shape[-1])
+
         video_features = self.mit(cls_features)
 
         return video_features, img_features
-    
+
     def forward(self, image, **kwargs):
         image = rearrange(image, "b c t h w -> b t c h w")
         video_features, _ = self.encode_video(image)
-        return video_features.reshape(*video_features.shape, 1,1,1)
+        return video_features.reshape(*video_features.shape, 1, 1, 1)
 
     def cache_text(self, text):
         self.eval()
@@ -622,26 +815,38 @@ class XCLIP(CLIP):
 
     def forward_original(self, image, text):
         b = image.shape[0]
-        video_features, img_features = self.encode_video(image) 
+        video_features, img_features = self.encode_video(image)
         img_features = img_features.mean(dim=1, keepdim=False)
 
         if self.use_cache:
             text_features = self.cache_text(text)
         else:
             text_features = self.encode_text(text)
-        
+
         text_features = text_features.unsqueeze(0).expand(b, -1, -1)
-        text_features = text_features + self.prompts_generator(text_features, img_features)
-           
+        text_features = text_features + self.prompts_generator(
+            text_features, img_features
+        )
+
         video_features = video_features / video_features.norm(dim=-1, keepdim=True)
         text_features = text_features / text_features.norm(dim=-1, keepdim=True)
         logit_scale = self.logit_scale.exp()
         logits = torch.einsum("bd,bkd->bk", video_features, logit_scale * text_features)
-        
+
         return logits
 
 
-def build_x_clip_model(pretrained_path="./pretrained_weights/k400_32_8.pth", droppath=0., use_checkpoint=False, logger=None, prompts_alpha=1e-1, prompts_layers=2, use_cache=True, mit_layers=4, **kwargs):
+def build_x_clip_model(
+    pretrained_path="./pretrained_weights/k400_32_8.pth",
+    droppath=0.0,
+    use_checkpoint=False,
+    logger=None,
+    prompts_alpha=1e-1,
+    prompts_layers=2,
+    use_cache=True,
+    mit_layers=4,
+    **kwargs,
+):
     state_dict = torch.load(pretrained_path, map_location="cpu")["model"]
     T = int(pretrained_path.split("_")[-1].split(".")[0])
     print(T)
@@ -649,18 +854,40 @@ def build_x_clip_model(pretrained_path="./pretrained_weights/k400_32_8.pth", dro
 
     if vit:
         vision_width = state_dict["visual.conv1.weight"].shape[0]
-        vision_layers = len([k for k in state_dict.keys() if k.startswith("visual.") and k.endswith(".attn.in_proj_weight")])
+        vision_layers = len(
+            [
+                k
+                for k in state_dict.keys()
+                if k.startswith("visual.") and k.endswith(".attn.in_proj_weight")
+            ]
+        )
         vision_patch_size = state_dict["visual.conv1.weight"].shape[-1]
-        grid_size = round((state_dict["visual.positional_embedding"].shape[0] - 1) ** 0.5)
+        grid_size = round(
+            (state_dict["visual.positional_embedding"].shape[0] - 1) ** 0.5
+        )
         image_resolution = vision_patch_size * grid_size
     else:
-        counts: list = [len(set(k.split(".")[2] for k in state_dict if k.startswith(f"visual.layer{b}"))) for b in [1, 2, 3, 4]]
+        counts: list = [
+            len(
+                set(
+                    k.split(".")[2]
+                    for k in state_dict
+                    if k.startswith(f"visual.layer{b}")
+                )
+            )
+            for b in [1, 2, 3, 4]
+        ]
         vision_layers = tuple(counts)
-        
+
         vision_width = state_dict["visual.layer1.0.conv1.weight"].shape[0]
-        output_width = round((state_dict["visual.attnpool.positional_embedding"].shape[0] - 1) ** 0.5)
+        output_width = round(
+            (state_dict["visual.attnpool.positional_embedding"].shape[0] - 1) ** 0.5
+        )
         vision_patch_size = None
-        assert output_width ** 2 + 1 == state_dict["visual.attnpool.positional_embedding"].shape[0]
+        assert (
+            output_width ** 2 + 1
+            == state_dict["visual.attnpool.positional_embedding"].shape[0]
+        )
         image_resolution = output_width * 32
 
     embed_dim = state_dict["text_projection"].shape[1]
@@ -668,23 +895,38 @@ def build_x_clip_model(pretrained_path="./pretrained_weights/k400_32_8.pth", dro
     vocab_size = state_dict["token_embedding.weight"].shape[0]
     transformer_width = state_dict["ln_final.weight"].shape[0]
     transformer_heads = transformer_width // 64
-    transformer_layers = len(set(k.split(".")[2] for k in state_dict if k.startswith(f"transformer.resblocks")))
-    
+    transformer_layers = len(
+        set(
+            k.split(".")[2]
+            for k in state_dict
+            if k.startswith(f"transformer.resblocks")
+        )
+    )
+
     model = XCLIP(
         embed_dim,
-        image_resolution, vision_layers, vision_width, vision_patch_size,
-        context_length, vocab_size, transformer_width, transformer_heads, transformer_layers,  
-        T=T, droppath=droppath, mit_layers=mit_layers,
-        prompts_alpha=prompts_alpha, prompts_layers=prompts_layers,
-        use_checkpoint=use_checkpoint, use_cache=use_cache,
+        image_resolution,
+        vision_layers,
+        vision_width,
+        vision_patch_size,
+        context_length,
+        vocab_size,
+        transformer_width,
+        transformer_heads,
+        transformer_layers,
+        T=T,
+        droppath=droppath,
+        mit_layers=mit_layers,
+        prompts_alpha=prompts_alpha,
+        prompts_layers=prompts_layers,
+        use_checkpoint=use_checkpoint,
+        use_cache=use_cache,
     )
 
     for key in ["input_resolution", "context_length", "vocab_size"]:
         if key in state_dict:
             del state_dict[key]
 
-    msg = model.load_state_dict(state_dict,strict=False)
-    
+    msg = model.load_state_dict(state_dict, strict=False)
+
     return model.eval()
-
-

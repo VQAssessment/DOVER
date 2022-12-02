@@ -1,14 +1,14 @@
-import decord
-from decord import VideoReader
-from decord import cpu, gpu
 import os.path as osp
-import numpy as np
-import torch, torchvision
-from tqdm import tqdm
-import cv2
-import skvideo.io
-
 import random
+
+import cv2
+import decord
+import numpy as np
+import skvideo.io
+import torch
+import torchvision
+from decord import VideoReader, cpu, gpu
+from tqdm import tqdm
 
 random.seed(42)
 
@@ -301,7 +301,9 @@ class FastVQAPlusPlusDataset(torch.utils.data.Dataset):
             filename = video_info["filename"]
             label = video_info["label"]
             if filename.endswith(".yuv"):
-                video = skvideo.io.vread(filename, 1080, 1920, inputdict={'-pix_fmt':'yuvj420p'})
+                video = skvideo.io.vread(
+                    filename, 1080, 1920, inputdict={"-pix_fmt": "yuvj420p"}
+                )
                 frame_inds = self.sampler(video.shape[0], self.phase == "train")
                 imgs = [torch.from_numpy(video[idx]) for idx in frame_inds]
             else:
@@ -444,7 +446,9 @@ class FragmentVideoDataset(torch.utils.data.Dataset):
             filename = video_info["filename"]
             label = video_info["label"]
             if filename.endswith(".yuv"):
-                video = skvideo.io.vread(filename, 1080, 1920, inputdict={'-pix_fmt':'yuvj420p'})
+                video = skvideo.io.vread(
+                    filename, 1080, 1920, inputdict={"-pix_fmt": "yuvj420p"}
+                )
                 frame_inds = self.sampler(video.shape[0], self.phase == "train")
                 imgs = [torch.from_numpy(video[idx]) for idx in frame_inds]
             else:

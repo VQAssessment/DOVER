@@ -1,13 +1,13 @@
+from functools import lru_cache, reduce
+from operator import mul
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
-import numpy as np
-from timm.models.layers import DropPath, trunc_normal_
-
-from functools import reduce, lru_cache
-from operator import mul
 from einops import rearrange
+from timm.models.layers import DropPath, trunc_normal_
 
 
 def fragment_infos(D, H, W, fragments=7, device="cuda"):

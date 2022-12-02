@@ -1,26 +1,23 @@
-import decord
-from decord import VideoReader
-from decord import cpu, gpu
+import copy
 import glob
+import os
 import os.path as osp
-import numpy as np
-import torch, torchvision
-from tqdm import tqdm
-import cv2
-
+import random
 from functools import lru_cache
 
-import random
-import copy
-
+import cv2
+import decord
+import numpy as np
 import skvideo.io
+import torch
+import torchvision
+from decord import VideoReader, cpu, gpu
+from tqdm import tqdm
 
 random.seed(42)
 
 decord.bridge.set_bridge("torch")
 
-
-    
 
 def get_spatial_fragments(
     video,
@@ -45,13 +42,13 @@ def get_spatial_fragments(
     dur_t, res_h, res_w = video.shape[-3:]
     ratio = min(res_h / size_h, res_w / size_w)
     if fallback_type == "upsample" and ratio < 1:
-        
+
         ovideo = video
         video = torch.nn.functional.interpolate(
             video / 255.0, scale_factor=1 / ratio, mode="bilinear"
         )
         video = (video * 255.0).type_as(ovideo)
-        
+
     if random_upsample:
 
         randratio = random.random() * 0.5 + 1
@@ -59,8 +56,6 @@ def get_spatial_fragments(
             video / 255.0, scale_factor=randratio, mode="bilinear"
         )
         video = (video * 255.0).type_as(ovideo)
-
-
 
     assert dur_t % aligned == 0, "Please provide match vclip and align index"
     size = size_h, size_w
@@ -129,7 +124,9 @@ def get_spatial_fragments(
 @lru_cache
 def get_resize_function(size_h, size_w, target_ratio=1, random_crop=False):
     if random_crop:
-        return torchvision.transforms.RandomResizedCrop((size_h, size_w), scale=(0.40,1.0))
+        return torchvision.transforms.RandomResizedCrop(
+            (size_h, size_w), scale=(0.40, 1.0)
+        )
     if target_ratio > 1:
         size_h = int(target_ratio * size_w)
         assert size_h > size_w
@@ -137,6 +134,7 @@ def get_resize_function(size_h, size_w, target_ratio=1, random_crop=False):
         size_w = int(size_h / target_ratio)
         assert size_w > size_h
     return torchvision.transforms.Resize((size_h, size_w))
+
 
 def get_resized_video(
     video,
@@ -146,12 +144,13 @@ def get_resized_video(
     arp=False,
     **kwargs,
 ):
-    video = video.permute(1,0,2,3)
-    resize_opt = get_resize_function(size_h, size_w, 
-                                     video.shape[-2] / video.shape[-1] if arp else 1,
-                                     random_crop)
-    video = resize_opt(video).permute(1,0,2,3)
+    video = video.permute(1, 0, 2, 3)
+    resize_opt = get_resize_function(
+        size_h, size_w, video.shape[-2] / video.shape[-1] if arp else 1, random_crop
+    )
+    video = resize_opt(video).permute(1, 0, 2, 3)
     return video
+
 
 def get_arp_resized_video(
     video,
@@ -159,15 +158,15 @@ def get_arp_resized_video(
     train=False,
     **kwargs,
 ):
-    if train: ## if during training, will random crop into square and then resize
+    if train:  ## if during training, will random crop into square and then resize
         res_h, res_w = video.shape[-2:]
         ori_short_edge = min(video.shape[-2:])
         if res_h > ori_short_edge:
             rnd_h = random.randrange(res_h - ori_short_edge)
-            video = video[...,rnd_h:rnd_h+ori_short_edge,:]
+            video = video[..., rnd_h : rnd_h + ori_short_edge, :]
         elif res_w > ori_short_edge:
             rnd_w = random.randrange(res_w - ori_short_edge)
-            video = video[...,:,rnd_h:rnd_h+ori_short_edge]
+            video = video[..., :, rnd_h : rnd_h + ori_short_edge]
     ori_short_edge = min(video.shape[-2:])
     scale_factor = short_edge / ori_short_edge
     ovideo = video
@@ -177,6 +176,7 @@ def get_arp_resized_video(
     video = (video * 255.0).type_as(ovideo)
     return video
 
+
 def get_arp_fragment_video(
     video,
     short_fragments=7,
@@ -184,15 +184,17 @@ def get_arp_fragment_video(
     train=False,
     **kwargs,
 ):
-    if train: ## if during training, will random crop into square and then get fragments
+    if (
+        train
+    ):  ## if during training, will random crop into square and then get fragments
         res_h, res_w = video.shape[-2:]
         ori_short_edge = min(video.shape[-2:])
         if res_h > ori_short_edge:
             rnd_h = random.randrange(res_h - ori_short_edge)
-            video = video[...,rnd_h:rnd_h+ori_short_edge,:]
+            video = video[..., rnd_h : rnd_h + ori_short_edge, :]
         elif res_w > ori_short_edge:
             rnd_w = random.randrange(res_w - ori_short_edge)
-            video = video[...,:,rnd_h:rnd_h+ori_short_edge]
+            video = video[..., :, rnd_h : rnd_h + ori_short_edge]
     kwargs["fsize_h"], kwargs["fsize_w"] = fsize, fsize
     res_h, res_w = video.shape[-2:]
     if res_h > res_w:
@@ -202,7 +204,8 @@ def get_arp_fragment_video(
         kwargs["fragments_h"] = short_fragments
         kwargs["fragments_w"] = int(short_fragments * res_w / res_h)
     return get_spatial_fragments(video, **kwargs)
-        
+
+
 def get_cropped_video(
     video,
     size_h=224,
@@ -225,7 +228,7 @@ def get_single_view(
         video = get_spatial_fragments(video, **kwargs)
     elif sample_type == "original":
         return video
-        
+
     return video
 
 
@@ -240,7 +243,9 @@ def spatial_temporal_view_decomposition(
     if video_path.endswith(".yuv"):
         print("This part will be deprecated due to large memory cost.")
         ## This is only an adaptation to LIVE-Qualcomm
-        ovideo = skvideo.io.vread(video_path, 1080, 1920, inputdict={'-pix_fmt':'yuvj420p'})
+        ovideo = skvideo.io.vread(
+            video_path, 1080, 1920, inputdict={"-pix_fmt": "yuvj420p"}
+        )
         for stype in samplers:
             frame_inds = samplers[stype](ovideo.shape[0], is_train)
             imgs = [torch.from_numpy(ovideo[idx]) for idx in frame_inds]
@@ -254,27 +259,35 @@ def spatial_temporal_view_decomposition(
         for stype in samplers:
             frame_inds[stype] = samplers[stype](len(vreader), is_train)
             all_frame_inds.append(frame_inds[stype])
-            
+
         ### Each frame is only decoded one time!!!
-        all_frame_inds = np.concatenate(all_frame_inds,0)
+        all_frame_inds = np.concatenate(all_frame_inds, 0)
         frame_dict = {idx: vreader[idx] for idx in np.unique(all_frame_inds)}
-        
+
         for stype in samplers:
             imgs = [frame_dict[idx] for idx in frame_inds[stype]]
             video[stype] = torch.stack(imgs, 0).permute(3, 0, 1, 2)
 
     sampled_video = {}
     for stype, sopt in sample_types.items():
-        sampled_video[stype] = get_single_view(video[stype], stype, 
-                                                       **sopt)
+        sampled_video[stype] = get_single_view(video[stype], stype, **sopt)
     return sampled_video, frame_inds
-        
-    
-import numpy as np
+
+
 import random
 
+import numpy as np
+
+
 class UnifiedFrameSampler:
-    def __init__(self, fsize_t, fragments_t, frame_interval=1, num_clips=1, drop_rate=0., ):
+    def __init__(
+        self,
+        fsize_t,
+        fragments_t,
+        frame_interval=1,
+        num_clips=1,
+        drop_rate=0.0,
+    ):
 
         self.fragments_t = fragments_t
         self.fsize_t = fsize_t
@@ -297,15 +310,16 @@ class UnifiedFrameSampler:
             )
         else:
             rnd_t = np.zeros(len(tgrids), dtype=np.int32)
-        
+
         ranges_t = (
             np.arange(self.fsize_t)[None, :] * self.frame_interval
             + rnd_t[:, None]
             + tgrids[:, None]
         )
-        
-        
-        drop = random.sample(list(range(self.fragments_t)), int(self.fragments_t * self.drop_rate))
+
+        drop = random.sample(
+            list(range(self.fragments_t)), int(self.fragments_t * self.drop_rate)
+        )
         dropped_ranges_t = []
         for i, rt in enumerate(ranges_t):
             if i not in drop:
@@ -317,7 +331,7 @@ class UnifiedFrameSampler:
 
         for i in range(self.num_clips):
             frame_inds += [self.get_frame_indices(total_frames)]
-            
+
         frame_inds = np.concatenate(frame_inds)
         frame_inds = np.mod(frame_inds + start_index, total_frames)
         return frame_inds.astype(np.int32)
@@ -326,12 +340,11 @@ class UnifiedFrameSampler:
 class ViewDecompositionDataset(torch.utils.data.Dataset):
     def __init__(self, opt):
         ## opt is a dictionary that includes options for video sampling
-        
+
         super().__init__()
-        
-        self.weight = opt["weight"]
-        
-        
+
+        self.weight = opt.get("weight", 0.5)
+
         self.video_infos = []
         self.ann_file = opt["anno_file"]
         self.data_prefix = opt["data_prefix"]
@@ -341,8 +354,9 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
         self.augment = opt.get("augment", False)
         if self.data_backend == "petrel":
             from petrel_client import client
+
             self.client = client.Client(enable_mc=True)
-        
+
         self.phase = opt["phase"]
         self.crop = opt.get("random_crop", False)
         self.mean = torch.FloatTensor([123.675, 116.28, 103.53])
@@ -351,12 +365,22 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
         for stype, sopt in opt["sample_types"].items():
             if "t_frag" not in sopt:
                 # resized temporal sampling for TQE in DOVER
-                self.samplers[stype] = UnifiedFrameSampler(sopt["clip_len"], sopt["num_clips"], sopt["frame_interval"])
+                self.samplers[stype] = UnifiedFrameSampler(
+                    sopt["clip_len"], sopt["num_clips"], sopt["frame_interval"]
+                )
             else:
                 # temporal sampling for AQE in DOVER
-                self.samplers[stype] = UnifiedFrameSampler(sopt["clip_len"] // sopt["t_frag"], sopt["t_frag"], sopt["frame_interval"], sopt["num_clips"])
-            print(stype+" branch sampled frames:", self.samplers[stype](240, self.phase == "train"))
-        
+                self.samplers[stype] = UnifiedFrameSampler(
+                    sopt["clip_len"] // sopt["t_frag"],
+                    sopt["t_frag"],
+                    sopt["frame_interval"],
+                    sopt["num_clips"],
+                )
+            print(
+                stype + " branch sampled frames:",
+                self.samplers[stype](240, self.phase == "train"),
+            )
+
         if isinstance(self.ann_file, list):
             self.video_infos = self.ann_file
         else:
@@ -370,37 +394,43 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
                         self.video_infos.append(dict(filename=filename, label=label))
             except:
                 #### No Label Testing
-                video_filenames = sorted(glob.glob(self.data_prefix+"/*.mp4"))
-                print(video_filenames)
+                video_filenames = []
+                for (root, dirs, files) in os.walk(self.data_prefix, topdown=True):
+                    for file in files:
+                        if file.endswith(".mp4"):
+                            video_filenames += [os.path.join(root, file)]
+                print(len(video_filenames))
                 for filename in video_filenames:
                     self.video_infos.append(dict(filename=filename, label=-1))
 
-
-        
     def __getitem__(self, index):
         video_info = self.video_infos[index]
         filename = video_info["filename"]
         label = video_info["label"]
-        
 
         ## Read Original Frames
         ## Process Frames
-        data, frame_inds = spatial_temporal_view_decomposition(filename, self.sample_types, self.samplers, 
-                                                            self.phase == "train", self.augment and (self.phase == "train"),
-                                                           )
-        
+        data, frame_inds = spatial_temporal_view_decomposition(
+            filename,
+            self.sample_types,
+            self.samplers,
+            self.phase == "train",
+            self.augment and (self.phase == "train"),
+        )
+
         for k, v in data.items():
-            data[k] = ((v.permute(1, 2, 3, 0) - self.mean) / self.std).permute(3, 0, 1, 2)
-         
+            data[k] = ((v.permute(1, 2, 3, 0) - self.mean) / self.std).permute(
+                3, 0, 1, 2
+            )
+
         data["num_clips"] = {}
         for stype, sopt in self.sample_types.items():
             data["num_clips"][stype] = sopt["num_clips"]
         data["frame_inds"] = frame_inds
         data["gt_label"] = label
         data["name"] = osp.basename(video_info["filename"])
-        
+
         return data
-    
+
     def __len__(self):
         return len(self.video_infos)
-    

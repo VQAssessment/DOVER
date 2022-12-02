@@ -1,14 +1,14 @@
+import math
+from functools import lru_cache, reduce
+from operator import mul
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
-import numpy as np
-from timm.models.layers import DropPath, trunc_normal_
-import math
-
-from functools import reduce, lru_cache
-from operator import mul
 from einops import rearrange
+from timm.models.layers import DropPath, trunc_normal_
 
 
 def fragment_infos(D, H, W, fragments=7, device="cuda"):
@@ -49,6 +49,7 @@ def global_position_index(
     )  # Wd*Wh*Ww, Wd*Wh*Ww, 3
     return relative_coords  # relative_coords
 
+
 @lru_cache
 def get_adaptive_window_size(
     base_window_size,
@@ -60,7 +61,6 @@ def get_adaptive_window_size(
     tx, hx, wx = base_x_size
     print((tw * tx_) // tx, (hw * hx_) // hx, (ww * wx_) // wx)
     return (tw * tx_) // tx, (hw * hx_) // hx, (ww * wx_) // wx
-
 
 
 class Mlp(nn.Module):
@@ -250,7 +250,7 @@ class WindowAttention3D(nn.Module):
             x: input features with shape of (num_windows*B, N, C)
             mask: (0/-inf) mask with shape of (num_windows, N, N) or None
         """
-        #print(x.shape)
+        # print(x.shape)
         B_, N, C = x.shape
         qkv = (
             self.qkv(x)
@@ -261,14 +261,16 @@ class WindowAttention3D(nn.Module):
 
         q = q * self.scale
         attn = q @ k.transpose(-2, -1)
-        
+
         if resized_window_size is None:
             rpi = self.relative_position_index[:N, :N]
         else:
-            relative_position_index = self.relative_position_index.reshape(*self.window_size, *self.window_size)
+            relative_position_index = self.relative_position_index.reshape(
+                *self.window_size, *self.window_size
+            )
             d, h, w = resized_window_size
-            
-            rpi = relative_position_index[:d,:h,:w,:d,:h,:w]
+
+            rpi = relative_position_index[:d, :h, :w, :d, :h, :w]
         relative_position_bias = self.relative_position_bias_table[
             rpi.reshape(-1)
         ].reshape(
@@ -407,9 +409,9 @@ class SwinTransformerBlock3D(nn.Module):
     def forward_part1(self, x, mask_matrix, resized_window_size=None):
         B, D, H, W, C = x.shape
         window_size, shift_size = get_window_size(
-            (D, H, W), 
-            self.window_size if resized_window_size is None else resized_window_size, 
-            self.shift_size
+            (D, H, W),
+            self.window_size if resized_window_size is None else resized_window_size,
+            self.shift_size,
         )
 
         x = self.norm1(x)
@@ -450,10 +452,21 @@ class SwinTransformerBlock3D(nn.Module):
         # W-MSA/SW-MSA
         # print(shift_size)
         gpi = global_position_index(
-            Dp, Hp, Wp, fragments=(1,) + window_size[1:], window_size=window_size, shift_size=shift_size, device=x.device,
+            Dp,
+            Hp,
+            Wp,
+            fragments=(1,) + window_size[1:],
+            window_size=window_size,
+            shift_size=shift_size,
+            device=x.device,
         )
         attn_windows = self.attn(
-            x_windows, mask=attn_mask, fmask=gpi, resized_window_size=window_size if resized_window_size is not None else None,
+            x_windows,
+            mask=attn_mask,
+            fmask=gpi,
+            resized_window_size=window_size
+            if resized_window_size is not None
+            else None,
         )  # self.finfo_windows)  # B*nW, Wd*Wh*Ww, C
         # merge windows
         attn_windows = attn_windows.view(-1, *(window_size + (C,)))
@@ -488,7 +501,9 @@ class SwinTransformerBlock3D(nn.Module):
         shortcut = x
         if not self.jump_attention:
             if self.use_checkpoint:
-                x = checkpoint.checkpoint(self.forward_part1, x, mask_matrix, resized_window_size)
+                x = checkpoint.checkpoint(
+                    self.forward_part1, x, mask_matrix, resized_window_size
+                )
             else:
                 x = self.forward_part1(x, mask_matrix, resized_window_size)
             x = shortcut + self.drop_path(x)
@@ -612,7 +627,7 @@ class BasicLayer(nn.Module):
         self.shift_size = tuple(i // 2 for i in window_size)
         self.depth = depth
         self.use_checkpoint = use_checkpoint
-        #print(window_size)
+        # print(window_size)
         # build blocks
         self.blocks = nn.ModuleList(
             [
@@ -650,13 +665,13 @@ class BasicLayer(nn.Module):
         """
         # calculate attention mask for SW-MSA
         B, C, D, H, W = x.shape
-        
+
         window_size, shift_size = get_window_size(
-            (D, H, W), 
-            self.window_size if resized_window_size is None else resized_window_size, 
+            (D, H, W),
+            self.window_size if resized_window_size is None else resized_window_size,
             self.shift_size,
         )
-        #print(window_size)
+        # print(window_size)
         x = rearrange(x, "b c d h w -> b d h w c")
         Dp = int(np.ceil(D / window_size[0])) * window_size[0]
         Hp = int(np.ceil(H / window_size[1])) * window_size[1]
@@ -823,7 +838,7 @@ class SwinTransformer3D(nn.Module):
         self.norm = norm_layer(self.num_features)
 
         self._freeze_stages()
-        
+
         self.init_weights()
 
     def _freeze_stages(self):
@@ -854,7 +869,6 @@ class SwinTransformer3D(nn.Module):
         """
         checkpoint = torch.load(self.pretrained, map_location="cpu")
         state_dict = checkpoint["model"]
-        
 
         # delete relative_position_index since we always re-init it
         relative_position_index_keys = [
@@ -867,7 +881,6 @@ class SwinTransformer3D(nn.Module):
         attn_mask_keys = [k for k in state_dict.keys() if "attn_mask" in k]
         for k in attn_mask_keys:
             del state_dict[k]
-            
 
         state_dict["patch_embed.proj.weight"] = (
             state_dict["patch_embed.proj.weight"]
@@ -912,7 +925,7 @@ class SwinTransformer3D(nn.Module):
             state_dict[k] = relative_position_bias_table_pretrained.repeat(
                 2 * wd - 1, 1
             )
-        
+
         msg = self.load_state_dict(state_dict, strict=False)
         print(msg)
         print(f"=> loaded successfully '{self.pretrained}'")
@@ -1017,8 +1030,8 @@ class SwinTransformer3D(nn.Module):
             self.pretrained = pretrained
         if isinstance(self.pretrained, str):
             self.apply(_init_weights)
-            #logger = get_root_logger()
-            #logger.info(f"load model from: {self.pretrained}")
+            # logger = get_root_logger()
+            # logger.info(f"load model from: {self.pretrained}")
 
             if self.pretrained2d:
                 # Inflate 2D model into 3D model.
@@ -1030,25 +1043,24 @@ class SwinTransformer3D(nn.Module):
             self.apply(_init_weights)
         else:
             raise TypeError("pretrained must be a str or None")
-            
-    
 
     def forward(self, x, multi=False, layer=-1, adaptive_window_size=False):
-        
+
         """Forward function."""
         if adaptive_window_size:
-            resized_window_size = get_adaptive_window_size(self.window_size, x.shape[2:], self.base_x_size)
+            resized_window_size = get_adaptive_window_size(
+                self.window_size, x.shape[2:], self.base_x_size
+            )
         else:
             resized_window_size = None
-        
+
         x = self.patch_embed(x)
 
         x = self.pos_drop(x)
         feats = [x]
-            
 
         for l, mlayer in enumerate(self.layers):
-            x = mlayer(x.contiguous(), resized_window_size)     
+            x = mlayer(x.contiguous(), resized_window_size)
             feats += [x]
 
         x = rearrange(x, "n c d h w -> n d h w c")
@@ -1057,7 +1069,10 @@ class SwinTransformer3D(nn.Module):
 
         if multi:
             shape = x.shape[2:]
-            return torch.cat([F.interpolate(xi,size=shape, mode="trilinear") for xi in feats[:-1]], 1)
+            return torch.cat(
+                [F.interpolate(xi, size=shape, mode="trilinear") for xi in feats[:-1]],
+                1,
+            )
         elif layer > -1:
             print("something", len(feats))
             return feats[layer]
@@ -1068,20 +1083,16 @@ class SwinTransformer3D(nn.Module):
         """Convert the model into training mode while keep layers freezed."""
         super(SwinTransformer3D, self).train(mode)
         self._freeze_stages()
-        
-        
+
+
 def swin_3d_tiny(**kwargs):
     ## Original Swin-3D Tiny with reduced windows
-    return SwinTransformer3D(depths=[2, 2, 6, 2],
-                             frag_biases=[0,0,0,0],
-                             **kwargs)
+    return SwinTransformer3D(depths=[2, 2, 6, 2], frag_biases=[0, 0, 0, 0], **kwargs)
+
 
 def swin_3d_small(**kwargs):
     # Original Swin-3D Small with reduced windows
-    return SwinTransformer3D(depths=[2, 2, 18, 2], 
-                             frag_biases=[0,0,0,0],
-                             **kwargs)
-    
+    return SwinTransformer3D(depths=[2, 2, 18, 2], frag_biases=[0, 0, 0, 0], **kwargs)
 
 
 class SwinTransformer2D(nn.Sequential):
