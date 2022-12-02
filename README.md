@@ -116,10 +116,12 @@ Simply add an `-f` argument, the script now can directly score the video's quali
 
 
 ```shell
-    python evaluate_a_set_of_videos.py -dir $YOUR_SPECIFID_DIR$
+    python evaluate_a_set_of_videos.py -in $YOUR_SPECIFID_DIR$ -out $OUTPUT_CSV_PATH$
 ```
 
-The results are stored as pickle files in dover_predictions with prefix `val-custom_`.
+The results are stored as `.pkl` files in dover_predictions with prefix `val-custom_` **and a custom-path csv file**.
+
+Please feel free to use DOVER to pseudo-label your non-quality video datasets.
 
 
 ## Data Preparation

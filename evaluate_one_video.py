@@ -15,7 +15,7 @@ mean, std = torch.FloatTensor([123.675, 116.28, 103.53]), torch.FloatTensor(
 )
 
 def fuse_results(results: list):
-    x = (results[0] - 0.1107) / 0.07355 * 0.6104 + (results[1] - 0.08285) / 0.03774 * 0.3896
+    x = (results[0] - 0.1107) / 0.07355 * 0.6104 + (results[1] + 0.08285) / 0.03774 * 0.3896
     print(x)
     return 1/(1 + np.exp(-x))
 

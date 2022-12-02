@@ -429,7 +429,7 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
                 data["num_clips"][stype] = sopt["num_clips"]
             data["frame_inds"] = frame_inds
             data["gt_label"] = label
-            data["name"] = osp.basename(video_info["filename"])
+            data["name"] = filename #osp.basename(video_info["filename"])
         except:
             # exception flow
             return {"name": filename}

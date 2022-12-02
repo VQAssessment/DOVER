@@ -21,7 +21,7 @@ mean, std = (
 
 
 def fuse_results(results: list):
-    a, t = (results[0] - 0.1107) / 0.07355, (results[1] - 0.08285) / 0.03774
+    a, t = (results[0] - 0.1107) / 0.07355, (results[1] + 0.08285) / 0.03774
     x = a * 0.6104 + t * 0.3896
     return {"aesthetic": 1/(1 + np.exp(-a)), 
             "technical": 1/(1 + np.exp(-t)), 
@@ -41,7 +41,11 @@ if __name__ == "__main__":
 
     ## can be your own
     parser.add_argument(
-        "-dir", "--video_dir", type=str, default="./demo", help="the input video dir"
+        "-in", "--input_video_dir", type=str, default="./demo", help="the input video dir"
+    )
+    
+    parser.add_argument(
+        "-out", "--output_result_csv", type=str, default="./dover_predictions/demo.csv", help="the input video dir"
     )
 
     parser.add_argument(
@@ -62,12 +66,15 @@ if __name__ == "__main__":
     video_paths = []
     all_results = {}
 
-
+    with open(
+        args.output_result_csv, "w"
+    ) as w:
+        w.write(f'path, aesthetic score, technical score, overall/final score\n')
 
     dopt = opt["data"]["val-l1080p"]["args"]
     
     dopt["anno_file"] = None
-    dopt["data_prefix"] = args.video_dir
+    dopt["data_prefix"] = args.input_video_dir
     
     dataset = ViewDecompositionDataset(dopt)
     
@@ -81,7 +88,7 @@ if __name__ == "__main__":
             
     try:
         with open(
-                f"dover_predictions/val-custom_{args.video_dir.split('/')[-1]}.pkl", "rb"
+                f"dover_predictions/val-custom_{args.input_video_dir.split('/')[-1]}.pkl", "rb"
             ) as rf:
             all_results = pkl.dump(all_results, rf)
         print(f"Starting from {len(all_results)}.")
@@ -119,6 +126,12 @@ if __name__ == "__main__":
         all_results[data["name"][0]] = rescaled_results
 
         with open(
-            f"dover_predictions/val-custom_{args.video_dir.split('/')[-1]}.pkl", "wb"
+            f"dover_predictions/val-custom_{args.input_video_dir.split('/')[-1]}.pkl", "wb"
         ) as wf:
             pkl.dump(all_results, wf)
+            
+            
+        with open(
+            args.output_result_csv, "a"
+        ) as w:
+            w.write(f'{data["name"][0]}, {rescaled_results["aesthetic"]*100:4f}, {rescaled_results["technical"]*100:4f},{rescaled_results["overall"]*100:4f}\n')
