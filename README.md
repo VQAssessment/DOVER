@@ -3,7 +3,7 @@
 Official Codes, Demos, Models for the Disentangled Objective Video Quality Evaluator (DOVER)
 
 
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER) [![](https://img.shields.io/github/stars/QualityAssessment/FAST-VQA-and-FasterVQA)](https://github.com/QualityAssessment/FAST-VQA-and-FasterVQA)
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER) [![](https://img.shields.io/github/stars/QualityAssessment/DOVER)](https://github.com/QualityAssessment/DOVER)
 [![State-of-the-Art](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/QualityAssessment/DOVER)
 <a href="https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
 
