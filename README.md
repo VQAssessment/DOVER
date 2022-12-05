@@ -3,11 +3,15 @@
 Official Codes, Demos, Models for the Disentangled Objective Video Quality Evaluator (DOVER)
 
 
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER)
-[![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/QualityAssessment/DOVER)
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER) [![](https://img.shields.io/github/stars/QualityAssessment/FAST-VQA-and-FasterVQA)](https://github.com/QualityAssessment/FAST-VQA-and-FasterVQA)
+[![State-of-the-Art](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/QualityAssessment/DOVER)
 <a href="https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
 
-:sparkles: Our appendix for ***more visualized results*** are added in our [Arxiv Preprint](arxiv.org/pdf/2211.04894) (19 pages, 18 figures)!
+Our appendix for ***more visualized results*** are added in our [Arxiv Preprint](arxiv.org/pdf/2211.04894) (19 pages, 18 figures)!
+
+**DOVER** Pseudo-labelled Quality scores of [Kinetics-400](https://www.deepmind.com/open-source/kinetics): https://github.com/QualityAssessment/DOVER/raw/master/dover_predictions/kinetics_400_1.csv
+
+**DOVER** Pseudo-labelled Quality scores of [YFCC-100M](http://projects.dfki.uni-kl.de/yfcc100m/): https://github.com/QualityAssessment/DOVER/raw/master/dover_predictions/yfcc_100m_1.csv
 
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/disentangling-aesthetic-and-technical-effects/video-quality-assessment-on-konvid-1k)](https://paperswithcode.com/sota/video-quality-assessment-on-konvid-1k?p=disentangling-aesthetic-and-technical-effects)
@@ -119,7 +123,7 @@ Simply add an `-f` argument, the script now can directly score the video's quali
     python evaluate_a_set_of_videos.py -in $YOUR_SPECIFID_DIR$ -out $OUTPUT_CSV_PATH$
 ```
 
-The results are stored as `.pkl` files in dover_predictions with prefix `val-custom_` **and a custom-path csv file**.
+The results are stored as `.csv` files in dover_predictions in your `OUTPUT_CSV_PATH`.
 
 Please feel free to use DOVER to pseudo-label your non-quality video datasets.
 

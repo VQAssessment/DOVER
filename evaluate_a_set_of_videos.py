@@ -123,15 +123,16 @@ if __name__ == "__main__":
             results = [np.mean(l.cpu().numpy()) for l in results]
 
         rescaled_results = fuse_results(results)
-        all_results[data["name"][0]] = rescaled_results
+        #all_results[data["name"][0]] = rescaled_results
 
-        with open(
-            f"dover_predictions/val-custom_{args.input_video_dir.split('/')[-1]}.pkl", "wb"
-        ) as wf:
-            pkl.dump(all_results, wf)
+        #with open(
+        #    f"dover_predictions/val-custom_{args.input_video_dir.split('/')[-1]}.pkl", "wb"
+        #) as wf:
+            #pkl.dump(all_results, wf)
             
-            
+       
         with open(
             args.output_result_csv, "a"
         ) as w:
             w.write(f'{data["name"][0]}, {rescaled_results["aesthetic"]*100:4f}, {rescaled_results["technical"]*100:4f},{rescaled_results["overall"]*100:4f}\n')
+        
