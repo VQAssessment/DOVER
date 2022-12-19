@@ -1,13 +1,16 @@
 # DOVER
 
-Official Codes, Demos, Models for the Disentangled Objective Video Quality Evaluator (DOVER)
+Official Codes, Demos, Models for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/pdf/2211.04894v2).
+
+- 19 Dec, 2022: Training Code for *Head-only Transfer Learning* is ready!! See [training](https://github.com/QualityAssessment/DOVER/blob/master/README.md#training)
+- 18 Dec, 2022: Thrid-party Chinese Exp lanation on this paper: [微信公众号](https://mp.weixin.qq.com/s/NZlyTwT7FAPkKhZUNc-30w)
 
 
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER) [![](https://img.shields.io/github/stars/QualityAssessment/DOVER)](https://github.com/QualityAssessment/DOVER)
 [![State-of-the-Art](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/QualityAssessment/DOVER)
 <a href="https://colab.research.google.com/github/taskswithcode/DOVER/blob/master/TWCDOVER.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
 
-Our appendix for ***more visualized results*** are added in our [Arxiv Preprint](arxiv.org/pdf/2211.04894) (19 pages, 18 figures)!
+
 
 **DOVER** Pseudo-labelled Quality scores of [Kinetics-400](https://www.deepmind.com/open-source/kinetics): [CSV](https://github.com/QualityAssessment/DOVER/raw/master/dover_predictions/kinetics_400_1.csv)
 
@@ -54,7 +57,7 @@ wget https://github.com/QualityAssessment/DOVER/releases/download/v0.1.0/DOVER.p
 cd ..
 ```
 
-## Judge the Quality of Any Video
+## Evaluation: Judge the Quality of Any Video
 
 ### Try on Demos
 
@@ -120,7 +123,7 @@ Simply add an `-f` argument, the script now can directly score the video's quali
 
 
 ```shell
-    python evaluate_a_set_of_videos.py -in $YOUR_SPECIFID_DIR$ -out $OUTPUT_CSV_PATH$
+    python evaluate_a_set_of_videos.py -in $YOUR_SPECIFIED_DIR$ -out $OUTPUT_CSV_PATH$
 ```
 
 The results are stored as `.csv` files in dover_predictions in your `OUTPUT_CSV_PATH`.
@@ -151,6 +154,27 @@ To test the pre-trained DOVER on multiple datasets, please run the following she
 ```shell
     python default_infer.py
 ```
+
+# Training: Adapt DOVER to your video quality dataset!
+
+Now you can employ ***head-only transfer*** of DOVER to get dataset-specific VQA prediction heads. As we have evaluated in the paper, this method has very similar performance with *end-to-end transfer* (usually 1%~2% difference), but will require **much less** GPU memory, as follows:
+
+```shell
+    python transfer_learning.py -t $YOUR_SPECIFIED_DATASET_NAME$
+```
+
+For existing public datasets, type the following commands for respective ones:
+
+- `python transfer_learning.py -t val-kv1k` for KoNViD-1k.
+- `python transfer_learning.py -t val-tyugc` for YouTube-UGC.
+- `python transfer_learning.py -t val-cvd2014` for CVD2014.
+- `python transfer_learning.py -t val-livevqc` for LIVE-VQC.
+
+
+As the backbone will not be updated here, the checkpoint saving process will only save the regression heads with only `398KB` file size (compared with `200+MB` size of the full model). To use it, simply replace the head weights with the official weights [DOVER.pth](https://github.com/teowu/DOVER/releases/download/v0.1.0/DOVER.pth).
+
+Fine-tuning curves by authors can be found here: [Official Curves](https://wandb.ai/timothyhwu/DOVER) for reference.
+
 
 ## Visualization
 
