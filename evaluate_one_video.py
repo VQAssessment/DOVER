@@ -1,23 +1,26 @@
+import torch
+
 import argparse
 import pickle as pkl
 
 import decord
 import numpy as np
-import torch
 import yaml
 
-from dover.datasets import (UnifiedFrameSampler,
-                            spatial_temporal_view_decomposition)
+from dover.datasets import UnifiedFrameSampler, spatial_temporal_view_decomposition
 from dover.models import DOVER
 
 mean, std = torch.FloatTensor([123.675, 116.28, 103.53]), torch.FloatTensor(
     [58.395, 57.12, 57.375]
 )
 
+
 def fuse_results(results: list):
-    x = (results[0] - 0.1107) / 0.07355 * 0.6104 + (results[1] + 0.08285) / 0.03774 * 0.3896
+    x = (results[0] - 0.1107) / 0.07355 * 0.6104 + (
+        results[1] + 0.08285
+    ) / 0.03774 * 0.3896
     print(x)
-    return 1/(1 + np.exp(-x))
+    return 1 / (1 + np.exp(-x))
 
 
 def gaussian_rescale(pr):
@@ -81,12 +84,12 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-f", "--fusion", action="store_true",
+        "-f",
+        "--fusion",
+        action="store_true",
     )
 
     args = parser.parse_args()
-
-    video_reader = decord.VideoReader(args.video_path)
 
     with open(args.opt, "r") as f:
         opt = yaml.safe_load(f)
@@ -136,7 +139,7 @@ if __name__ == "__main__":
     if args.fusion:
         # predict fused overall score, with default score-level fusion parameters
         print("Normalized fused overall score (scale in [0,1]):", fuse_results(results))
-        
+
     else:
         # predict disentangled scores
         rescale_results(results, vname=args.video_path)

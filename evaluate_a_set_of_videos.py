@@ -1,17 +1,19 @@
+import torch
+
 import argparse
 import os
 import pickle as pkl
 
 import decord
 import numpy as np
-import torch
 import yaml
 from tqdm import tqdm
 
-from dover.datasets import (UnifiedFrameSampler,
-                            spatial_temporal_view_decomposition,
-                            ViewDecompositionDataset,
-                           )
+from dover.datasets import (
+    UnifiedFrameSampler,
+    ViewDecompositionDataset,
+    spatial_temporal_view_decomposition,
+)
 from dover.models import DOVER
 
 mean, std = (
@@ -23,12 +25,11 @@ mean, std = (
 def fuse_results(results: list):
     a, t = (results[0] - 0.1107) / 0.07355, (results[1] + 0.08285) / 0.03774
     x = a * 0.6104 + t * 0.3896
-    return {"aesthetic": 1/(1 + np.exp(-a)), 
-            "technical": 1/(1 + np.exp(-t)), 
-            "overall": 1/(1 + np.exp(-x))
-           }
-
-
+    return {
+        "aesthetic": 1 / (1 + np.exp(-a)),
+        "technical": 1 / (1 + np.exp(-t)),
+        "overall": 1 / (1 + np.exp(-x)),
+    }
 
 
 if __name__ == "__main__":
@@ -41,11 +42,19 @@ if __name__ == "__main__":
 
     ## can be your own
     parser.add_argument(
-        "-in", "--input_video_dir", type=str, default="./demo", help="the input video dir"
+        "-in",
+        "--input_video_dir",
+        type=str,
+        default="./demo",
+        help="the input video dir",
     )
-    
+
     parser.add_argument(
-        "-out", "--output_result_csv", type=str, default="./dover_predictions/demo.csv", help="the input video dir"
+        "-out",
+        "--output_result_csv",
+        type=str,
+        default="./dover_predictions/demo.csv",
+        help="the input video dir",
     )
 
     parser.add_argument(
@@ -66,35 +75,33 @@ if __name__ == "__main__":
     video_paths = []
     all_results = {}
 
-    with open(
-        args.output_result_csv, "w"
-    ) as w:
-        w.write(f'path, aesthetic score, technical score, overall/final score\n')
+    with open(args.output_result_csv, "w") as w:
+        w.write(f"path, aesthetic score, technical score, overall/final score\n")
 
     dopt = opt["data"]["val-l1080p"]["args"]
-    
+
     dopt["anno_file"] = None
     dopt["data_prefix"] = args.input_video_dir
-    
+
     dataset = ViewDecompositionDataset(dopt)
-    
-    
+
     dataloader = torch.utils.data.DataLoader(
-            dataset,
-            batch_size=1,
-            num_workers=opt["num_workers"],
-            pin_memory=True,
+        dataset,
+        batch_size=1,
+        num_workers=opt["num_workers"],
+        pin_memory=True,
     )
-            
+
     try:
         with open(
-                f"dover_predictions/val-custom_{args.input_video_dir.split('/')[-1]}.pkl", "rb"
-            ) as rf:
+            f"dover_predictions/val-custom_{args.input_video_dir.split('/')[-1]}.pkl",
+            "rb",
+        ) as rf:
             all_results = pkl.dump(all_results, rf)
         print(f"Starting from {len(all_results)}.")
     except:
         print("Starting over.")
-        
+
     sample_types = ["aesthetic", "technical"]
 
     for i, data in enumerate(tqdm(dataloader, desc="Testing")):
@@ -117,22 +124,20 @@ if __name__ == "__main__":
                         b * data["num_clips"][key], c, t // data["num_clips"][key], h, w
                     )
                 )
-        
+
         with torch.no_grad():
             results = evaluator(video, reduce_scores=False)
             results = [np.mean(l.cpu().numpy()) for l in results]
 
         rescaled_results = fuse_results(results)
-        #all_results[data["name"][0]] = rescaled_results
+        # all_results[data["name"][0]] = rescaled_results
 
-        #with open(
+        # with open(
         #    f"dover_predictions/val-custom_{args.input_video_dir.split('/')[-1]}.pkl", "wb"
-        #) as wf:
-            #pkl.dump(all_results, wf)
-            
-       
-        with open(
-            args.output_result_csv, "a"
-        ) as w:
-            w.write(f'{data["name"][0]}, {rescaled_results["aesthetic"]*100:4f}, {rescaled_results["technical"]*100:4f},{rescaled_results["overall"]*100:4f}\n')
-        
+        # ) as wf:
+        # pkl.dump(all_results, wf)
+
+        with open(args.output_result_csv, "a") as w:
+            w.write(
+                f'{data["name"][0]}, {rescaled_results["aesthetic"]*100:4f}, {rescaled_results["technical"]*100:4f},{rescaled_results["overall"]*100:4f}\n'
+            )
