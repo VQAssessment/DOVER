@@ -2,8 +2,9 @@
 
 Official Codes, Demos, Models for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/pdf/2211.04894v2).
 
-- 19 Dec, 2022: Training Code for *Head-only Transfer Learning* is ready!! See [training](https://github.com/QualityAssessment/DOVER/blob/master/README.md#training)
-- 18 Dec, 2022: Thrid-party Chinese Exp lanation on this paper: [微信公众号](https://mp.weixin.qq.com/s/NZlyTwT7FAPkKhZUNc-30w)
+- 19 Dec, 2022: Training Code for *Head-only Transfer Learning* is ready!! See [training](https://github.com/QualityAssessment/DOVER#training-adapt-dover-to-your-video-quality-dataset).
+- 18 Dec, 2022: Thrid-party Chinese Exp lanation on this paper: [微信公众号](https://mp.weixin.qq.com/s/NZlyTwT7FAPkKhZUNc-30w).
+- 10 Dec, 2022: Now the evaluation tool can directly predict a fused score for any video. See [here](https://github.com/QualityAssessment/DOVER#new-get-the-fused-quality-score-for-use).
 
 
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=teowu/DOVER) [![](https://img.shields.io/github/stars/QualityAssessment/DOVER)](https://github.com/QualityAssessment/DOVER)
