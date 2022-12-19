@@ -1,9 +1,9 @@
 # DOVER
 
-Official Codes, Demos, Models for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/pdf/2211.04894v2).
+Official Codes, Demos, Models for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894v2).
 
 - 19 Dec, 2022: Training Code for *Head-only Transfer Learning* is ready!! See [training](https://github.com/QualityAssessment/DOVER#training-adapt-dover-to-your-video-quality-dataset).
-- 18 Dec, 2022: Thrid-party Chinese Exp lanation on this paper: [微信公众号](https://mp.weixin.qq.com/s/NZlyTwT7FAPkKhZUNc-30w).
+- 18 Dec, 2022: 感谢媒矿工厂提供中文解读。Thrid-party Chinese Explanation on this paper: [微信公众号](https://mp.weixin.qq.com/s/NZlyTwT7FAPkKhZUNc-30w).
 - 10 Dec, 2022: Now the evaluation tool can directly predict a fused score for any video. See [here](https://github.com/QualityAssessment/DOVER#new-get-the-fused-quality-score-for-use).
 
 
@@ -27,7 +27,6 @@ Official Codes, Demos, Models for the [Disentangled Objective Video Quality Eval
 ![Fig](figs/in_the_wild_on_kinetics.png)
 
 Corresponding video results can be found [here](https://github.com/QualityAssessment/DOVER/tree/master/figs).
-
 
 The first attempt to disentangle the VQA problem into aesthetic and technical quality evaluations.
 Official code for ArXiv Preprint Paper *"Disentangling Aesthetic and Technical Effects for Video Quality Assessment of User Generated Content"*.
