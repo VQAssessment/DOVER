@@ -111,7 +111,6 @@ def inference_set(
 
     # with open(f"dover_predictions/{set_name}.pkl", "wb") as f:
     #    pickle.dump(pr_dict, f)
-    print(pr_labels)
     pr_labels = rescale(pr_labels, gt_labels)
 
     s = spearmanr(gt_labels, pr_labels)[0]
