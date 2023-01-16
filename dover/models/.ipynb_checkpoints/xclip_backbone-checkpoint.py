@@ -61,17 +61,11 @@ class QuickGELU(nn.Module):
 
 class ResidualAttentionBlock(nn.Module):
     def __init__(
-        self,
-        d_model: int,
-        n_head: int,
-        attn_mask: torch.Tensor = None,
+        self, d_model: int, n_head: int, attn_mask: torch.Tensor = None,
     ):
         super().__init__()
 
-        self.attn = nn.MultiheadAttention(
-            d_model,
-            n_head,
-        )
+        self.attn = nn.MultiheadAttention(d_model, n_head,)
         self.ln_1 = LayerNorm(d_model)
 
         self.mlp = nn.Sequential(
@@ -302,15 +296,9 @@ class CrossFramelAttentionBlock(nn.Module):
 
         self.message_fc = nn.Linear(d_model, d_model)
         self.message_ln = LayerNorm(d_model)
-        self.message_attn = nn.MultiheadAttention(
-            d_model,
-            n_head,
-        )
+        self.message_attn = nn.MultiheadAttention(d_model, n_head,)
 
-        self.attn = nn.MultiheadAttention(
-            d_model,
-            n_head,
-        )
+        self.attn = nn.MultiheadAttention(d_model, n_head,)
         self.ln_1 = LayerNorm(d_model)
 
         self.drop_path = DropPath(droppath) if droppath > 0.0 else nn.Identity()
@@ -428,12 +416,7 @@ class CrossFrameCommunicationTransformer(nn.Module):
 
         ## Attention Blocks
         self.transformer = Transformer(
-            width,
-            layers,
-            heads,
-            droppath=droppath,
-            use_checkpoint=use_checkpoint,
-            T=T,
+            width, layers, heads, droppath=droppath, use_checkpoint=use_checkpoint, T=T,
         )
         self.ln_post = LayerNorm(width)
         self.proj = nn.Parameter(scale * torch.randn(width, output_dim))
@@ -535,10 +518,7 @@ class MulitHeadAttention(nn.Module):
 
 class PromptGeneratorLayer(nn.Module):
     def __init__(
-        self,
-        d_model,
-        nhead,
-        dropout=0.0,
+        self, d_model, nhead, dropout=0.0,
     ):
         super().__init__()
         self.cross_attn = MulitHeadAttention(d_model, nhead, proj_drop=dropout)
@@ -564,10 +544,7 @@ class PromptGeneratorLayer(nn.Module):
 
 class VideoSpecificPrompt(nn.Module):
     def __init__(
-        self,
-        layers=2,
-        embed_dim=512,
-        alpha=0.1,
+        self, layers=2, embed_dim=512, alpha=0.1,
     ):
         super().__init__()
         self.norm = nn.LayerNorm(embed_dim)
@@ -632,10 +609,7 @@ class ResidualAttentionBlock(nn.Module):
 
 class MultiframeIntegrationTransformer(nn.Module):
     def __init__(
-        self,
-        T,
-        embed_dim=512,
-        layers=1,
+        self, T, embed_dim=512, layers=1,
     ):
         super().__init__()
         self.T = T
@@ -711,15 +685,11 @@ class XCLIP(CLIP):
         )
 
         self.prompts_generator = VideoSpecificPrompt(
-            layers=prompts_layers,
-            embed_dim=embed_dim,
-            alpha=prompts_alpha,
+            layers=prompts_layers, embed_dim=embed_dim, alpha=prompts_alpha,
         )
         self.use_cache = use_cache
         self.mit = MultiframeIntegrationTransformer(
-            T=T,
-            embed_dim=embed_dim,
-            layers=mit_layers,
+            T=T, embed_dim=embed_dim, layers=mit_layers,
         )
 
         dpr = (

@@ -14,9 +14,7 @@ from .swin_backbone import swin_3d_small, swin_3d_tiny
 
 class BaseEvaluator(nn.Module):
     def __init__(
-        self,
-        backbone=dict(),
-        vqa_head=dict(),
+        self, backbone=dict(), vqa_head=dict(),
     ):
         super().__init__()
         self.backbone = VideoBackbone(**backbone)
@@ -175,9 +173,7 @@ class DOVER(nn.Module):
 
 class BaseImageEvaluator(nn.Module):
     def __init__(
-        self,
-        backbone=dict(),
-        iqa_head=dict(),
+        self, backbone=dict(), iqa_head=dict(),
     ):
         super().__init__()
         self.backbone = ImageBackbone(**backbone)

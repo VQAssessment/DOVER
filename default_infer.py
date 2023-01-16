@@ -202,10 +202,7 @@ def main():
         )
 
         val_loader = torch.utils.data.DataLoader(
-            val_dataset,
-            batch_size=1,
-            num_workers=opt["num_workers"],
-            pin_memory=True,
+            val_dataset, batch_size=1, num_workers=opt["num_workers"], pin_memory=True,
         )
 
         profile_inference(val_dataset, model, device)
@@ -215,13 +212,7 @@ def main():
 
         best_ = -1, -1, -1, 1000
 
-        best_ = inference_set(
-            val_loader,
-            model,
-            device,
-            best_,
-            set_name=key,
-        )
+        best_ = inference_set(val_loader, model, device, best_, set_name=key,)
 
         print(
             f"""Testing result on: [{len(val_loader)}] videos:

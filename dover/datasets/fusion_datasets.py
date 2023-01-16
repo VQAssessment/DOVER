@@ -137,12 +137,7 @@ def get_resize_function(size_h, size_w, target_ratio=1, random_crop=False):
 
 
 def get_resized_video(
-    video,
-    size_h=224,
-    size_w=224,
-    random_crop=False,
-    arp=False,
-    **kwargs,
+    video, size_h=224, size_w=224, random_crop=False, arp=False, **kwargs,
 ):
     video = video.permute(1, 0, 2, 3)
     resize_opt = get_resize_function(
@@ -153,10 +148,7 @@ def get_resized_video(
 
 
 def get_arp_resized_video(
-    video,
-    short_edge=224,
-    train=False,
-    **kwargs,
+    video, short_edge=224, train=False, **kwargs,
 ):
     if train:  ## if during training, will random crop into square and then resize
         res_h, res_w = video.shape[-2:]
@@ -178,11 +170,7 @@ def get_arp_resized_video(
 
 
 def get_arp_fragment_video(
-    video,
-    short_fragments=7,
-    fsize=32,
-    train=False,
-    **kwargs,
+    video, short_fragments=7, fsize=32, train=False, **kwargs,
 ):
     if (
         train
@@ -207,10 +195,7 @@ def get_arp_fragment_video(
 
 
 def get_cropped_video(
-    video,
-    size_h=224,
-    size_w=224,
-    **kwargs,
+    video, size_h=224, size_w=224, **kwargs,
 ):
     kwargs["fragments_h"], kwargs["fragments_w"] = 1, 1
     kwargs["fsize_h"], kwargs["fsize_w"] = size_h, size_w
@@ -218,9 +203,7 @@ def get_cropped_video(
 
 
 def get_single_view(
-    video,
-    sample_type="aesthetic",
-    **kwargs,
+    video, sample_type="aesthetic", **kwargs,
 ):
     if sample_type.startswith("aesthetic"):
         video = get_resized_video(video, **kwargs)
@@ -233,11 +216,7 @@ def get_single_view(
 
 
 def spatial_temporal_view_decomposition(
-    video_path,
-    sample_types,
-    samplers,
-    is_train=False,
-    augment=False,
+    video_path, sample_types, samplers, is_train=False, augment=False,
 ):
     video = {}
     if video_path.endswith(".yuv"):
@@ -281,12 +260,7 @@ import numpy as np
 
 class UnifiedFrameSampler:
     def __init__(
-        self,
-        fsize_t,
-        fragments_t,
-        frame_interval=1,
-        num_clips=1,
-        drop_rate=0.0,
+        self, fsize_t, fragments_t, frame_interval=1, num_clips=1, drop_rate=0.0,
     ):
 
         self.fragments_t = fragments_t

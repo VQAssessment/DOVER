@@ -289,10 +289,7 @@ class FastVQAPlusPlusDataset(torch.utils.data.Dataset):
             self.cache = None
 
     def __getitem__(
-        self,
-        index,
-        tocache=False,
-        need_original_frames=False,
+        self, index, tocache=False, need_original_frames=False,
     ):
         if tocache or self.cache is None:
             fx, fy = self.fragments[1:]
@@ -430,12 +427,7 @@ class FragmentVideoDataset(torch.utils.data.Dataset):
             self.cache = None
 
     def __getitem__(
-        self,
-        index,
-        fragments=-1,
-        fsize=-1,
-        tocache=False,
-        need_original_frames=False,
+        self, index, fragments=-1, fsize=-1, tocache=False, need_original_frames=False,
     ):
         if tocache or self.cache is None:
             if fragments == -1:
@@ -725,12 +717,7 @@ class FragmentImageDataset(torch.utils.data.Dataset):
 
 class ResizedImageDataset(torch.utils.data.Dataset):
     def __init__(
-        self,
-        ann_file,
-        data_prefix,
-        size=224,
-        cache_in_memory=False,
-        phase="test",
+        self, ann_file, data_prefix, size=224, cache_in_memory=False, phase="test",
     ):
         self.ann_file = ann_file
         self.data_prefix = data_prefix

@@ -52,9 +52,7 @@ def global_position_index(
 
 @lru_cache
 def get_adaptive_window_size(
-    base_window_size,
-    input_x_size,
-    base_x_size,
+    base_window_size, input_x_size, base_x_size,
 ):
     tw, hw, ww = base_window_size
     tx_, hx_, wx_ = input_x_size
@@ -905,22 +903,20 @@ class SwinTransformer3D(nn.Module):
             else:
                 if L1 != L2:
                     S1 = int(L1 ** 0.5)
-                    relative_position_bias_table_pretrained_resized = (
-                        torch.nn.functional.interpolate(
-                            relative_position_bias_table_pretrained.permute(1, 0).view(
-                                1, nH1, S1, S1
-                            ),
-                            size=(
-                                2 * self.window_size[1] - 1,
-                                2 * self.window_size[2] - 1,
-                            ),
-                            mode="bicubic",
-                        )
+                    relative_position_bias_table_pretrained_resized = torch.nn.functional.interpolate(
+                        relative_position_bias_table_pretrained.permute(1, 0).view(
+                            1, nH1, S1, S1
+                        ),
+                        size=(
+                            2 * self.window_size[1] - 1,
+                            2 * self.window_size[2] - 1,
+                        ),
+                        mode="bicubic",
                     )
-                    relative_position_bias_table_pretrained = (
-                        relative_position_bias_table_pretrained_resized.view(
-                            nH2, L2
-                        ).permute(1, 0)
+                    relative_position_bias_table_pretrained = relative_position_bias_table_pretrained_resized.view(
+                        nH2, L2
+                    ).permute(
+                        1, 0
                     )
             state_dict[k] = relative_position_bias_table_pretrained.repeat(
                 2 * wd - 1, 1
@@ -980,22 +976,20 @@ class SwinTransformer3D(nn.Module):
                     print(
                         relative_position_bias_table_pretrained.shape, 15, nH1, S1, S1
                     )
-                    relative_position_bias_table_pretrained_resized = (
-                        torch.nn.functional.interpolate(
-                            relative_position_bias_table_pretrained.permute(1, 0)
-                            .view(nH1, 15, S1, S1)
-                            .transpose(0, 1),
-                            size=(
-                                2 * self.window_size[i_layer][1] - 1,
-                                2 * self.window_size[i_layer][2] - 1,
-                            ),
-                            mode="bicubic",
-                        )
+                    relative_position_bias_table_pretrained_resized = torch.nn.functional.interpolate(
+                        relative_position_bias_table_pretrained.permute(1, 0)
+                        .view(nH1, 15, S1, S1)
+                        .transpose(0, 1),
+                        size=(
+                            2 * self.window_size[i_layer][1] - 1,
+                            2 * self.window_size[i_layer][2] - 1,
+                        ),
+                        mode="bicubic",
                     )
-                    relative_position_bias_table_pretrained = (
-                        relative_position_bias_table_pretrained_resized.transpose(
-                            0, 1
-                        ).view(nH2, 15, L2)
+                    relative_position_bias_table_pretrained = relative_position_bias_table_pretrained_resized.transpose(
+                        0, 1
+                    ).view(
+                        nH2, 15, L2
                     )
             clean_dict[k] = relative_position_bias_table_pretrained  # .repeat(2*wd-1,1)
 

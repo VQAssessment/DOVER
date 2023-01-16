@@ -10,8 +10,9 @@ import yaml
 from dover.datasets import UnifiedFrameSampler, spatial_temporal_view_decomposition
 from dover.models import DOVER
 
-mean, std = torch.FloatTensor([123.675, 116.28, 103.53]), torch.FloatTensor(
-    [58.395, 57.12, 57.375]
+mean, std = (
+    torch.FloatTensor([123.675, 116.28, 103.53]),
+    torch.FloatTensor([58.395, 57.12, 57.375]),
 )
 
 
@@ -84,9 +85,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-f",
-        "--fusion",
-        action="store_true",
+        "-f", "--fusion", action="store_true",
     )
 
     args = parser.parse_args()

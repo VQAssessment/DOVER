@@ -86,10 +86,7 @@ if __name__ == "__main__":
     dataset = ViewDecompositionDataset(dopt)
 
     dataloader = torch.utils.data.DataLoader(
-        dataset,
-        batch_size=1,
-        num_workers=opt["num_workers"],
-        pin_memory=True,
+        dataset, batch_size=1, num_workers=opt["num_workers"], pin_memory=True,
     )
 
     try:

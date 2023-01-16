@@ -865,22 +865,20 @@ class SwinTransformer3D(nn.Module):
             else:
                 if L1 != L2:
                     S1 = int(L1 ** 0.5)
-                    relative_position_bias_table_pretrained_resized = (
-                        torch.nn.functional.interpolate(
-                            relative_position_bias_table_pretrained.permute(1, 0).view(
-                                1, nH1, S1, S1
-                            ),
-                            size=(
-                                2 * self.window_size[1] - 1,
-                                2 * self.window_size[2] - 1,
-                            ),
-                            mode="bicubic",
-                        )
+                    relative_position_bias_table_pretrained_resized = torch.nn.functional.interpolate(
+                        relative_position_bias_table_pretrained.permute(1, 0).view(
+                            1, nH1, S1, S1
+                        ),
+                        size=(
+                            2 * self.window_size[1] - 1,
+                            2 * self.window_size[2] - 1,
+                        ),
+                        mode="bicubic",
                     )
-                    relative_position_bias_table_pretrained = (
-                        relative_position_bias_table_pretrained_resized.view(
-                            nH2, L2
-                        ).permute(1, 0)
+                    relative_position_bias_table_pretrained = relative_position_bias_table_pretrained_resized.view(
+                        nH2, L2
+                    ).permute(
+                        1, 0
                     )
             state_dict[k] = relative_position_bias_table_pretrained.repeat(
                 2 * wd - 1, 1
