@@ -1,16 +1,17 @@
 name: DOVER
-num_epochs: 30
-l_num_epochs: 0
+num_epochs: 0
+l_num_epochs: 10
 warmup_epochs: 2.5
 ema: true
 save_model: true
-batch_size: 16
-num_workers: 8
+batch_size: 8
+num_workers: 6
+split_seed: 42
 
 wandb:
     project_name: DOVER
 
-data:                   
+data:   
     val-livevqc:
         type: ViewDecompositionDataset
         args:
@@ -170,7 +171,7 @@ model:
         backbone:
             technical:
                 type: swin_tiny_grpb
-                checkpoint: false
+                checkpoint: true
                 pretrained:
             aesthetic:
                 type: conv_tiny

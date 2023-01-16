@@ -2,6 +2,7 @@
 
 Official Codes, Demos, Models for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894v2).
 
+- 16 Jan, 2022: Full Training Code Available (include LVBS). See below.
 - 19 Dec, 2022: Training Code for *Head-only Transfer Learning* is ready!! See [training](https://github.com/QualityAssessment/DOVER#training-adapt-dover-to-your-video-quality-dataset).
 - 18 Dec, 2022: 感谢媒矿工厂提供中文解读。Thrid-party Chinese Explanation on this paper: [微信公众号](https://mp.weixin.qq.com/s/NZlyTwT7FAPkKhZUNc-30w).
 - 10 Dec, 2022: Now the evaluation tool can directly predict a fused score for any video. See [here](https://github.com/QualityAssessment/DOVER#new-get-the-fused-quality-score-for-use).
@@ -157,7 +158,9 @@ To test the pre-trained DOVER on multiple datasets, please run the following she
 
 # Training: Adapt DOVER to your video quality dataset!
 
-Now you can employ ***head-only transfer*** of DOVER to get dataset-specific VQA prediction heads. As we have evaluated in the paper, this method has very similar performance with *end-to-end transfer* (usually 1%~2% difference), but will require **much less** GPU memory, as follows:
+Now you can employ ***head-only/end-to-end transfer*** of DOVER to get dataset-specific VQA prediction heads. 
+
+We still recommend **head-only** transfer. As we have evaluated in the paper, this method has very similar performance with *end-to-end transfer* (usually 1%~2% difference), but will require **much less** GPU memory, as follows:
 
 ```shell
     python transfer_learning.py -t $YOUR_SPECIFIED_DATASET_NAME$
@@ -166,12 +169,14 @@ Now you can employ ***head-only transfer*** of DOVER to get dataset-specific VQA
 For existing public datasets, type the following commands for respective ones:
 
 - `python transfer_learning.py -t val-kv1k` for KoNViD-1k.
-- `python transfer_learning.py -t val-tyugc` for YouTube-UGC.
+- `python transfer_learning.py -t val-ytugc` for YouTube-UGC.
 - `python transfer_learning.py -t val-cvd2014` for CVD2014.
 - `python transfer_learning.py -t val-livevqc` for LIVE-VQC.
 
 
 As the backbone will not be updated here, the checkpoint saving process will only save the regression heads with only `398KB` file size (compared with `200+MB` size of the full model). To use it, simply replace the head weights with the official weights [DOVER.pth](https://github.com/teowu/DOVER/releases/download/v0.1.0/DOVER.pth).
+
+We also support ***end-to-end*** fine-tune right now (by modifying the `num_epochs: 0` to `num_epochs: 15` in `./dover.yml`). It will require more memory cost and more storage cost for the weights (with full parameters) saved, but will result in optimal accuracy.
 
 Fine-tuning curves by authors can be found here: [Official Curves](https://wandb.ai/timothyhwu/DOVER) for reference.
 
@@ -207,12 +212,14 @@ Directly training on LSVQ and testing on other datasets:
 
 ### Representation-level Fusion
 
-Transfer learning on smaller datasets:
+Transfer learning on smaller datasets (as reproduced in current training code):
 
 |       | KoNViD-1k | CVD2014 | LIVE-VQC | YouTube-UGC |
 | ----  |    ----   |   ---- |  ----   |    ----   |
-| SROCC | 0.906 | 0.894 | 0.858 | 0.880 |
-| PLCC  | 0.905 | 0.908 | 0.874 | 0.874 |
+| SROCC | 0.905 (0.906 in paper) | 0.894 | 0.855 (0.858 in paper) | 0.888 (0.880 in paper) |
+| PLCC  | 0.905 (0.909 in paper) | 0.908 | 0.875 (0.874 in paper) | 0.884 (0.874 in paper) |
+
+LVBS is introduced in the representation-level fusion.
 
 
 

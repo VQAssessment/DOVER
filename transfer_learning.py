@@ -1,4 +1,5 @@
 import torch
+
 import cv2
 import random
 import os.path as osp
@@ -99,7 +100,7 @@ sample_types=["aesthetic", "technical"]
 
 
 def finetune_epoch(ft_loader, model, model_ema, optimizer, scheduler, device, epoch=-1, 
-                   need_upsampled=False, need_feat=False, need_fused=False, need_separate_sup=False):
+                   need_upsampled=False, need_feat=False, need_fused=False, need_separate_sup=True):
     model.train()
     for i, data in enumerate(tqdm(ft_loader, desc=f"Training in epoch {epoch}")):
         optimizer.zero_grad()
@@ -121,68 +122,27 @@ def finetune_epoch(ft_loader, model, model_ema, optimizer, scheduler, device, ep
         frame_inds = data["frame_inds"]
         
         # Plain Supervised Loss
-        p_loss, r_loss = rplcc_loss(y_pred, y), rank_loss(y_pred, y)
+        o_loss = plcc_loss(y_pred, y) + 0.3 * rank_loss(y_pred, y)
         
-        loss = p_loss + 0.3 * r_loss
+        loss = 0 #p_loss + 0.3 * r_loss
         wandb.log(
             {
-                "train/plcc_loss": p_loss.item(),
-                "train/rank_loss": r_loss.item(),
+                "train/overall_loss": o_loss.item(),
             }
         )
         
         if need_separate_sup:
             p_loss_a = plcc_loss(scores[0].mean((-3, -2, -1)), y)
             p_loss_b = plcc_loss(scores[1].mean((-3, -2, -1)), y)
-            loss += 0.15 * (p_loss_a + p_loss_b)
+            r_loss_a = rank_loss(scores[0].mean((-3, -2, -1)), y)
+            r_loss_b = rank_loss(scores[1].mean((-3, -2, -1)), y)
+            loss += p_loss_a + p_loss_b + 0.3 * r_loss_a + 0.3 * r_loss_b #+ 0.2 * o_loss
             wandb.log(
                 {
                     "train/plcc_loss_a": p_loss_a.item(),
                     "train/plcc_loss_b": p_loss_b.item(),
                 }
             )
-        if need_upsampled:
-            ## Supervised Loss for Upsampled Samples
-            if need_separate_sup:
-                p_loss_up_a = plcc_loss(scores_up[0].mean((-3, -2, -1)), y)
-                p_loss_up_b = plcc_loss(scores_up[1].mean((-3, -2, -1)), y)
-                loss += 0.15 * (p_loss_up_a + p_loss_up_b)
-                wandb.log(
-                    {
-                        "train/plcc_loss_up_a": p_loss_up_a.item(),
-                        "train/plcc_loss_up_b": p_loss_up_b.item(),
-                    }
-                )
-            p_loss_up, r_loss_up = plcc_loss(y_pred_up, y), rank_loss(y_pred_up, y)
-            loss += p_loss_up + 0.1 * r_loss_up
-            wandb.log(
-                {
-                    "train/up_plcc_loss": p_loss_up.item(),
-                    "train/up_rank_loss": r_loss_up.item(),
-                }
-            )
-            
-            
-            if need_fused:
-                #print(y_pred, y_pred_up)
-                fused_mask = torch.where(torch.randn(*y_pred.shape) > 0, 1, 0).to(y_pred.device)
-                y_pred_f = y_pred * fused_mask + y_pred_up * (1 - fused_mask)
-                #print(y_pred_f)
-                p_loss_f, r_loss_f = plcc_loss(y_pred_f, y), rank_loss(y_pred_f, y)
-                loss += 0.25 * (p_loss_f + 0.1 * r_loss_f)
-                wandb.log(
-                    {
-                        "train/f_plcc_loss": p_loss_f.item(),
-                        "train/f_rank_loss": r_loss_f.item(),
-                    }
-                )
-            
-            if need_feat:
-                ## Self-Supervised Loss, Similarity between different sampling densities
-                for key in feats:
-                    sim_loss = self_similarity_loss(feats[key], feats_up[key])
-                    loss += 0.25 * sim_loss
-                    wandb.log({f"train/{key}_sim_loss": sim_loss.item(),})
 
         wandb.log({"train/total_loss": loss.item(),})
 
@@ -210,6 +170,7 @@ def profile_inference(inf_set, model, device):
         if key in data:
             video[key] = data[key].to(device).unsqueeze(0)
     with torch.no_grad():
+        
         flops, params = profile(model, (video, ))
     print(f"The FLOps of the Variant is {flops/1e9:.1f}G, with Params {params/1e6:.2f}M.")
 
@@ -491,6 +452,57 @@ def main():
 
                 print(
                     f"""For the linear transfer process on {key} with {len(val_loaders[key])} videos,
+                    the best validation accuracy of the model-n is as follows:
+                    SROCC: {bests_n[key][0]:.4f}
+                    PLCC:  {bests_n[key][1]:.4f}
+                    KROCC: {bests_n[key][2]:.4f}
+                    RMSE:  {bests_n[key][3]:.4f}."""
+                )
+                
+        for key, value in dict(model.named_children()).items():
+            if "backbone" in key:
+                for param in value.parameters():
+                    param.requires_grad = True
+
+        for epoch in range(opt["num_epochs"]):
+            print(f"End-to-end Epoch {epoch}:")
+            for key, train_loader in train_loaders.items():
+                finetune_epoch(
+                    train_loader, model, model_ema, optimizer, scheduler, device, epoch,
+                    opt.get("need_upsampled", False), opt.get("need_feat", False), opt.get("need_fused", False),
+                )
+            for key in val_loaders:
+                bests[key] = inference_set(
+                    val_loaders[key],
+                    model_ema if model_ema is not None else model,
+                    device, bests[key], save_model=opt["save_model"], 
+                    save_name=opt["name"]+"_head_"+args.target_set+f"_{split}",
+                    suffix = key+"_s",
+                 )
+                if model_ema is not None:
+                    bests_n[key] = inference_set(
+                       val_loaders[key],
+                        model,
+                        device, bests_n[key], save_model=opt["save_model"], 
+                        save_name=opt["name"]+"_head_"+args.target_set+f"_{split}",
+                        suffix = key+'_n',
+                    )
+                else:
+                    bests_n[key] = bests[key]
+
+        if opt["num_epochs"] >= 0:
+            for key in val_loaders:
+                print(
+                    f"""For the end-to-end transfer process on {key} with {len(val_loaders[key])} videos,
+                    the best validation accuracy of the model-s is as follows:
+                    SROCC: {bests[key][0]:.4f}
+                    PLCC:  {bests[key][1]:.4f}
+                    KROCC: {bests[key][2]:.4f}
+                    RMSE:  {bests[key][3]:.4f}."""
+                )
+
+                print(
+                    f"""For the end-to-end transfer process on {key} with {len(val_loaders[key])} videos,
                     the best validation accuracy of the model-n is as follows:
                     SROCC: {bests_n[key][0]:.4f}
                     PLCC:  {bests_n[key][1]:.4f}
