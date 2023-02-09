@@ -318,7 +318,7 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
         super().__init__()
 
         self.weight = opt.get("weight", 0.5)
-
+        
         self.video_infos = []
         self.ann_file = opt["anno_file"]
         self.data_prefix = opt["data_prefix"]
@@ -374,6 +374,7 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
                         if file.endswith(".mp4"):
                             video_filenames += [os.path.join(root, file)]
                 print(len(video_filenames))
+                video_filenames = sorted(video_filenames)
                 for filename in video_filenames:
                     self.video_infos.append(dict(filename=filename, label=-1))
 

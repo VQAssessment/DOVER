@@ -2,6 +2,7 @@
 
 Official Codes, Demos, Models for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894v2).
 
+- 9 Feb, 2022: **DOVER-Mobile** is available! Evaluate on CPU with High Speed!
 - 16 Jan, 2022: Full Training Code Available (include LVBS). See below.
 - 19 Dec, 2022: Training Code for *Head-only Transfer Learning* is ready!! See [training](https://github.com/QualityAssessment/DOVER#training-adapt-dover-to-your-video-quality-dataset).
 - 18 Dec, 2022: 感谢媒矿工厂提供中文解读。Thrid-party Chinese Explanation on this paper: [微信公众号](https://mp.weixin.qq.com/s/NZlyTwT7FAPkKhZUNc-30w).
@@ -45,16 +46,32 @@ Official code for ArXiv Preprint Paper *"Disentangling Aesthetic and Technical E
 
 ![Fig](figs/approach.png)
 
+### DOVER or DOVER-Mobile
+
+DOVER-Mobile changes the backbone of two branches in DOVER into `convnext_v2_femto` (inflated). The whole DOVER-Mobile has only **9.86M** (5.7x less than DOVER) parameters, **52.3GFLops** (5.4x less than DOVER), and less than **1.9GB graphic memory cost** (3.1x less than DOVER) during inference.
+
+The speed on CPU is also much faster (**1.4s** vs 3.6s per video, on our test environment).
+
+Results comparison:
+|  PLCC     | KoNViD-1k | LIVE-VQC | LSVQ_test | LSVQ_1080p | Speed on CPU |
+| ----  |    ----   |   ----  |      ----     |   ----  
+| [**DOVER**](https://github.com/QualityAssessment/DOVER/releases/download/v0.1.0/DOVER.pth) | 0.883 | 0.854 | 0.889 | 0.830 | 3.6s |
+| [**DOVER-Mobile**](https://github.com/QualityAssessment/DOVER/releases/download/v0.5.0/DOVER-Mobile.pth) | 0.853 | 0.835 | 0.867 | 0.802 | 1.4s |
+| BVQA (TCSVT 2022) | 0.839 | 0.824 | 0.854 | 0.791 | >300s |
+| Patch-VQ (CVPR 2021) | 0.795 | 0.807 | 0.828 | 0.739 | >100s |
+
+
 ## Install
 
 The repository can be installed via the following commands:
 ```shell
 git clone https://github.com/QualityAssessment/DOVER.git 
 cd DOVER 
-pip install .  #stop here if you do not need pretrained weights, but why not?
+pip install .  
 mkdir pretrained_weights 
 cd pretrained_weights 
 wget https://github.com/QualityAssessment/DOVER/releases/download/v0.1.0/DOVER.pth 
+wget https://github.com/QualityAssessment/DOVER/releases/download/v0.5.0/DOVER-Mobile.pth
 cd ..
 ```
 

@@ -138,13 +138,8 @@ def finetune_epoch(
 
         frame_inds = data["frame_inds"]
 
-        # Plain Supervised Loss
-        o_loss = plcc_loss(y_pred, y) + 0.3 * rank_loss(y_pred, y)
 
         loss = 0  # p_loss + 0.3 * r_loss
-        wandb.log(
-            {"train/overall_loss": o_loss.item(),}
-        )
 
         if need_separate_sup:
             p_loss_a = plcc_loss(scores[0].mean((-3, -2, -1)), y)
@@ -322,7 +317,7 @@ def main():
     )
 
     parser.add_argument(
-        "-t", "--target_set", type=str, default="val-kv1k", help="target_set"
+        "-t", "--target_set", type=str, default="val-maxwell", help="target_set"
     )
 
     args = parser.parse_args()

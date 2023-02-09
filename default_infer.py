@@ -68,6 +68,7 @@ def inference_set(
 
     best_s, best_p, best_k, best_r = best_
 
+    names = []
     keys = []
 
     for i, data in enumerate(tqdm(inf_loader, desc="Validating")):
@@ -95,6 +96,7 @@ def inference_set(
             result["pr_labels"] = labels
         result["gt_label"] = data["gt_label"].item()
         result["name"] = data["name"]
+        names.append(data["name"][0])
         # result['frame_inds'] = data['frame_inds']
         # del data
         results.append(result)
@@ -153,8 +155,7 @@ def inference_set(
     print(
         f"For {len(inf_loader)} videos, \nthe accuracy of the model: [{suffix}] is as follows:\n  SROCC: {s:.4f} best: {best_s:.4f} \n  PLCC:  {p:.4f} best: {best_p:.4f}  \n  KROCC: {k:.4f} best: {best_k:.4f} \n  RMSE:  {r:.4f} best: {best_r:.4f}."
     )
-
-    return best_s, best_p, best_k, best_r, pr_labels
+    return best_s, best_p, best_k, best_r, pr_labels, names
 
 
 def main():
@@ -163,6 +164,9 @@ def main():
     parser.add_argument(
         "-o", "--opt", type=str, default="dover.yml", help="the option file"
     )
+    parser.add_argument(
+        "-d", "--device", type=str, default="cuda", help="the running device"
+    )
 
     args = parser.parse_args()
     with open(args.opt, "r") as f:
@@ -170,9 +174,7 @@ def main():
     print(opt)
 
     ## adaptively choose the device
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    # device = "cpu"
+    device = args.device
 
     ## defining model and loading checkpoint
 
@@ -195,6 +197,7 @@ def main():
             project=opt["wandb"]["project_name"],
             name=opt["name"] + "_Test_" + key,
             reinit=True,
+            settings=wandb.Settings(start_method='thread'),
         )
 
         val_dataset = getattr(datasets, opt["data"][key]["type"])(
