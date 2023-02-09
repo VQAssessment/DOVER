@@ -53,12 +53,14 @@ DOVER-Mobile changes the backbone of two branches in DOVER into `convnext_v2_fem
 The speed on CPU is also much faster (**1.4s** vs 3.6s per video, on our test environment).
 
 Results comparison:
-|  PLCC    | KoNViD-1k | LIVE-VQC | LSVQ_test | LSVQ_1080p | Speed on CPU |
+|  Metric: PLCC    | KoNViD-1k | LIVE-VQC | LSVQ_test | LSVQ_1080p | Speed on CPU |
 | ----  |    ----   |   ----  |      ----     |   ----  | ---- |
 | [**DOVER**](https://github.com/QualityAssessment/DOVER/releases/download/v0.1.0/DOVER.pth) | 0.883 | 0.854 | 0.889 | 0.830 | 3.6s |
-| [**DOVER-Mobile**](https://github.com/QualityAssessment/DOVER/releases/download/v0.5.0/DOVER-Mobile.pth) | 0.853 | 0.835 | 0.867 | 0.802 | 1.4s |
+| [**DOVER-Mobile**](https://github.com/QualityAssessment/DOVER/releases/download/v0.5.0/DOVER-Mobile.pth) | 0.853 | 0.835 | 0.867 | 0.802 | **1.4s**:rocket: |
 | BVQA (TCSVT 2022) | 0.839 | 0.824 | 0.854 | 0.791 | >300s |
 | Patch-VQ (CVPR 2021) | 0.795 | 0.807 | 0.828 | 0.739 | >100s |
+
+To switch to DOVER-Mobile, please add `-o dover-mobile.yml` at the end of any of following scripts (train, test, validate).
 
 
 ## Install
