@@ -90,13 +90,12 @@ After the installation above, you can do this with a single step:
 python convert_to_onnx.py
 ```
 
-and try 
+You may infer with ONNX as follows.
 
 ```shell
 python onnx_inference.py -v ./demo/17734.mp4
 ```
 
-to evaluate on our demo videos.
 
 ### Try on Demos
 
