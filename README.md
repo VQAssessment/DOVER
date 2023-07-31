@@ -1,11 +1,10 @@
 # DOVER
 
-Official Codes, Demos, Models for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894v2).
+Official Codes, Demos, Models for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894v3), state-of-the-art in UGC-VQA.
 
-- 9 Feb, 2022: **DOVER-Mobile** is available! Evaluate on CPU with High Speed!
-- 16 Jan, 2022: Full Training Code Available (include LVBS). See below.
-- 19 Dec, 2022: Training Code for *Head-only Transfer Learning* is ready!! See [training](https://github.com/QualityAssessment/DOVER#training-adapt-dover-to-your-video-quality-dataset).
-- 18 Dec, 2022: 感谢媒矿工厂提供中文解读。Thrid-party Chinese Explanation on this paper: [微信公众号](https://mp.weixin.qq.com/s/NZlyTwT7FAPkKhZUNc-30w).
+- 17 Jul, 2023: DOVER has been accepted by ICCV2023. We will release the DIVIDE-3k dataset to train DOVER++ via fully-supervised LVBS soon.
+- 9 Feb, 2023: **DOVER-Mobile** is available! Evaluate on CPU with Very High Speed!
+- 16 Jan, 2023: Full Training Code Available (include LVBS). See below.
 - 10 Dec, 2022: Now the evaluation tool can directly predict a fused score for any video. See [here](https://github.com/QualityAssessment/DOVER#new-get-the-fused-quality-score-for-use).
 
 
@@ -31,18 +30,20 @@ Official Codes, Demos, Models for the [Disentangled Objective Video Quality Eval
 Corresponding video results can be found [here](https://github.com/QualityAssessment/DOVER/tree/master/figs).
 
 The first attempt to disentangle the VQA problem into aesthetic and technical quality evaluations.
-Official code for ArXiv Preprint Paper *"Disentangling Aesthetic and Technical Effects for Video Quality Assessment of User Generated Content"*.
+Official code for [ICCV2023] Paper *"Exploring Video Quality Assessment on User Generated Contents from Aesthetic and Technical Perspectives"*. 
 
 
 
 ## Introduction
 
-### Problem Definition
+
+*In-the-wild UGC-VQA is entangled by aesthetic and technical perspectives, which may result in different opinions on the term **QUALITY**.*
 
 ![Fig](figs/problem_definition.png)
 
 ### the proposed DOVER
 
+*This inspires us to propose a simple and effective way to disengtangle the two perspectives from **EXISTING** UGC-VQA datasets.*
 
 ![Fig](figs/approach.png)
 
@@ -219,52 +220,32 @@ Or, just take a look at our training curves that are made public:
 and welcome to reproduce them!
 
 
-## Results
-
-### Score-level Fusion
-
-Directly training on LSVQ and testing on other datasets:
-
-|    | PLCC@LSVQ_1080p | PLCC@LSVQ_test | PLCC@LIVE_VQC | PLCC@KoNViD | MACs | config | model |
-| ----  |    ----   |   ---- |  ----   |    ----   | ----  |    ----   |   ---- | 
-|  DOVER |  0.830 |  0.889  |   0.855 | 0.883   |  282G  |  [config](dover.yml)  | [github](https://github.com/teowu/DOVER/releases/download/v0.1.0/DOVER.pth) |
-
-### Representation-level Fusion
-
-Transfer learning on smaller datasets (as reproduced in current training code):
-
-|       | KoNViD-1k | CVD2014 | LIVE-VQC | YouTube-UGC |
-| ----  |    ----   |   ---- |  ----   |    ----   |
-| SROCC | 0.905 (0.906 in paper) | 0.894 | 0.855 (0.858 in paper) | 0.888 (0.880 in paper) |
-| PLCC  | 0.905 (0.909 in paper) | 0.908 | 0.875 (0.874 in paper) | 0.884 (0.874 in paper) |
-
-LVBS is introduced in the representation-level fusion.
-
-
-
 ## Acknowledgement
 
-Thanks for [Annan Wang](https://github.com/AnnanWangDaniel) for developing the interfaces for subjective studies.
-Thanks for every participant of the studies!
+Thanks for every participant of the subjective studies!
 
 ## Citation
 
-Should you find our works interesting and would like to cite them, please feel free to add these in your references!
+Should you find our work interesting and would like to cite it, please feel free to add these in your references! 
+
 
 ```bibtex
-@article{wu2022disentanglevqa,
-  title={Disentangling Aesthetic and Technical Effects for Video Quality Assessment of User Generated Content},
-  author={Wu, Haoning and Liao, Liang and Chen, Chaofeng and Hou, Jingwen and Wang, Annan and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
-  journal={arXiv preprint arXiv:2211.04894},
+%fastvqa
+@inproceedings{wu2022fastvqa,
+  title={FAST-VQA: Efficient End-to-end Video Quality Assessment with Fragment Sampling},
+  author={Wu, Haoning and Chen, Chaofeng and Hou, Jingwen and Liao, Liang and Wang, Annan and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
+  booktitle ={Proceedings of European Conference of Computer Vision (ECCV)},
   year={2022}
 }
 
-@article{wu2022fastquality,
-  title={FAST-VQA: Efficient End-to-end Video Quality Assessment with Fragment Sampling},
-  author={Wu, Haoning and Chen, Chaofeng and Hou, Jingwen and Liao, Liang and Wang, Annan and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
-  journal={Proceedings of European Conference of Computer Vision (ECCV)},
-  year={2022}
+%dover
+@inproceedings{wu2023dover,
+      title={Exploring Video Quality Assessment on User Generated Contents from Aesthetic and Technical Perspectives}, 
+      author={Wu, Haoning and Zhang, Erli and Liao, Liang and Chen, Chaofeng and Hou, Jingwen Hou and Wang, Annan and Sun, Wenxiu Sun and Yan, Qiong and Lin, Weisi},
+      year={2023},
+      booktitle={International Conference on Computer Vision (ICCV)},
 }
+
 
 @misc{end2endvideoqualitytool,
   title = {Open Source Deep End-to-End Video Quality Assessment Toolbox},

@@ -112,10 +112,12 @@ class DOVER(nn.Module):
         vclips,
         inference=True,
         return_pooled_feats=False,
+        return_raw_feats=False,
         reduce_scores=False,
         pooled=False,
         **kwargs
     ):
+        assert (return_pooled_feats & return_raw_feats) == False, "Please only choose one kind of features to return"
         if inference:
             self.eval()
             with torch.no_grad():
@@ -130,7 +132,9 @@ class DOVER(nn.Module):
                     else:
                         scores += [getattr(self, "vqa_head")(feat)]
                     if return_pooled_feats:
-                        feats[key] = feat.mean((-3, -2, -1))
+                        feats[key] = feat
+                    if return_raw_feats:
+                        feats[key] = feat
                 if reduce_scores:
                     if len(scores) > 1:
                         scores = reduce(lambda x, y: x + y, scores)
@@ -139,7 +143,7 @@ class DOVER(nn.Module):
                     if pooled:
                         scores = torch.mean(scores, (1, 2, 3, 4))
             self.train()
-            if return_pooled_feats:
+            if return_pooled_feats or return_raw_feats:
                 return scores, feats
             return scores
         else:
@@ -170,77 +174,10 @@ class DOVER(nn.Module):
                 return scores, feats
             return scores
         
-class MaxDOVER(nn.Module):
-    def __init__(
+    def forward_head(
         self,
-        backbone_size="divided",
-        backbone_preserve_keys="fragments,resize",
-        multi=False,
-        layer=-1,
-        backbone=dict(
-            resize={"window_size": (4, 4, 4)}, fragments={"window_size": (4, 4, 4)}
-        ),
-        divide_head=False,
-        vqa_head=dict(in_channels=768),
-        var=False,
-    ):
-        self.backbone_preserve_keys = backbone_preserve_keys.split(",")
-        self.multi = multi
-        self.layer = layer
-        super().__init__()
-        for key, hypers in backbone.items():
-            print(backbone_size)
-            if key not in self.backbone_preserve_keys:
-                continue
-            if backbone_size == "divided":
-                t_backbone_size = hypers["type"]
-            else:
-                t_backbone_size = backbone_size
-            if t_backbone_size == "swin_tiny":
-                b = swin_3d_tiny(**backbone[key])
-            elif t_backbone_size == "swin_tiny_grpb":
-                # to reproduce fast-vqa
-                b = VideoBackbone()
-            elif t_backbone_size == "swin_tiny_grpb_m":
-                # to reproduce fast-vqa-m
-                b = VideoBackbone(window_size=(4, 4, 4), frag_biases=[0, 0, 0, 0])
-            elif t_backbone_size == "swin_small":
-                b = swin_3d_small(**backbone[key])
-            elif t_backbone_size == "conv_tiny":
-                b = convnext_3d_tiny(pretrained=True)
-            elif t_backbone_size == "conv_small":
-                b = convnext_3d_small(pretrained=True)
-            elif t_backbone_size == "conv_femto":
-                b = convnextv2_3d_femto(pretrained=True)
-            elif t_backbone_size == "conv_pico":
-                b = convnextv2_3d_pico(pretrained=True)
-            elif t_backbone_size == "xclip":
-                raise NotImplementedError
-                # b = build_x_clip_model(**backbone[key])
-            else:
-                raise NotImplementedError
-            print("Setting backbone:", key + "_backbone")
-            setattr(self, key + "_backbone", b)
-        if divide_head:
-            for key in backbone:
-                pre_pool = False #if key == "technical" else True
-                if key not in self.backbone_preserve_keys:
-                    continue
-                b = VQAHead(pre_pool=pre_pool, **vqa_head)
-                print("Setting head:", key + "_head")
-                setattr(self, key + "_head", b)
-        else:
-            if var:
-                self.vqa_head = VARHead(**vqa_head)
-                print(b)
-            else:
-                self.vqa_head = VQAHead(**vqa_head)
-
-    def forward(
-        self,
-        vclips,
+        feats,
         inference=True,
-        return_pooled_feats=False,
         reduce_scores=False,
         pooled=False,
         **kwargs
@@ -250,16 +187,12 @@ class MaxDOVER(nn.Module):
             with torch.no_grad():
                 scores = []
                 feats = {}
-                for key in vclips:
-                    feat = getattr(self, key.split("_")[0] + "_backbone")(
-                        vclips[key], multi=self.multi, layer=self.layer, **kwargs
-                    )
+                for key in feats:
+                    feat = feats[key]
                     if hasattr(self, key.split("_")[0] + "_head"):
                         scores += [getattr(self, key.split("_")[0] + "_head")(feat)]
                     else:
                         scores += [getattr(self, "vqa_head")(feat)]
-                    if return_pooled_feats:
-                        feats[key] = feat.mean((-3, -2, -1))
                 if reduce_scores:
                     if len(scores) > 1:
                         scores = reduce(lambda x, y: x + y, scores)
@@ -268,8 +201,6 @@ class MaxDOVER(nn.Module):
                     if pooled:
                         scores = torch.mean(scores, (1, 2, 3, 4))
             self.train()
-            if return_pooled_feats:
-                return scores, feats
             return scores
         else:
             self.train()
@@ -284,7 +215,7 @@ class MaxDOVER(nn.Module):
                 else:
                     scores += [getattr(self, "vqa_head")(feat)]
                 if return_pooled_feats:
-                    feats[key] = feat.mean((-3, -2, -1))
+                    feats[key] = feat
             if reduce_scores:
                 if len(scores) > 1:
                     scores = reduce(lambda x, y: x + y, scores)
@@ -298,6 +229,8 @@ class MaxDOVER(nn.Module):
             if return_pooled_feats:
                 return scores, feats
             return scores
+        
+
 
 
 class BaseImageEvaluator(nn.Module):

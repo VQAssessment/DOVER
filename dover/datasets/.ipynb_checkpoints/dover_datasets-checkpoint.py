@@ -30,8 +30,19 @@ def get_spatial_fragments(
     random=False,
     random_upsample=False,
     fallback_type="upsample",
+    upsample=-1,
     **kwargs,
 ):
+    if upsample > 0:
+        old_h, old_w = video.shape[-2], video.shape[-1]
+        if old_h >= old_w:
+            w = upsample
+            h = int(upsample * old_h / old_w)
+        else:
+            h = upsample
+            w = int(upsample * old_w / old_h)
+        
+        video = get_resized_video(video, h, w)
     size_h = fragments_h * fsize_h
     size_w = fragments_w * fsize_w
     ## video: [C,T,H,W]
@@ -56,7 +67,7 @@ def get_spatial_fragments(
             video / 255.0, scale_factor=randratio, mode="bilinear"
         )
         video = (video * 255.0).type_as(ovideo)
-
+        
     assert dur_t % aligned == 0, "Please provide match vclip and align index"
     size = size_h, size_w
 
@@ -231,6 +242,7 @@ def spatial_temporal_view_decomposition(
             video[stype] = torch.stack(imgs, 0).permute(3, 0, 1, 2)
         del ovideo
     else:
+        decord.bridge.set_bridge("torch")
         vreader = VideoReader(video_path)
         ### Avoid duplicated video decoding!!! Important!!!!
         all_frame_inds = []
@@ -319,6 +331,9 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
 
         self.weight = opt.get("weight", 0.5)
         
+        self.fully_supervised = opt.get("fully_supervised", False)
+        print("Fully supervised:", self.fully_supervised)
+        
         self.video_infos = []
         self.ann_file = opt["anno_file"]
         self.data_prefix = opt["data_prefix"]
@@ -362,8 +377,11 @@ class ViewDecompositionDataset(torch.utils.data.Dataset):
                 with open(self.ann_file, "r") as fin:
                     for line in fin:
                         line_split = line.strip().split(",")
-                        filename, _, _, label = line_split
-                        label = float(label)
+                        filename, a, t, label = line_split
+                        if self.fully_supervised:
+                            label = float(a), float(t), float(label)
+                        else:
+                            label = float(label)
                         filename = osp.join(self.data_prefix, filename)
                         self.video_infos.append(dict(filename=filename, label=label))
             except:

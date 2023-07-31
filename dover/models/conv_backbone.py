@@ -4,6 +4,9 @@ import torch.nn.functional as F
 from timm.models.layers import trunc_normal_, DropPath
 from timm.models.registry import register_model
 
+from open_clip import CLIP3D
+import open_clip
+
 class GRN(nn.Module):
     """ GRN (Global Response Normalization) layer
     """
@@ -635,6 +638,7 @@ def convnextv2_huge(**kwargs):
     return model
 
 
+    
         
 if __name__ == "__main__":
 

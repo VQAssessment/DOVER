@@ -9,7 +9,6 @@ __all__ = [
     "VQABackbone",
     "IQABackbone",
     "VQAHead",
-    "MaxVQAHead",
     "IQAHead",
     "VARHead",
     "BaseEvaluator",
