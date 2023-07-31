@@ -1,7 +1,9 @@
 # DOVER
 
-Official Codes, Demos, Models for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894v3), state-of-the-art in UGC-VQA.
+Official Code for [ICCV2023] Paper *"Exploring Video Quality Assessment on User Generated Contents from Aesthetic and Technical Perspectives"*. 
+Official Code, Demo, Weights for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894v3).
 
+- 1 Aug, 2023: ONNX conversion script for DOVER has been released. Short tip: after installation, run [this](https://github.com/VQAssessment/DOVER/blob/master/convert_to_onnx.py) and then [this](https://github.com/VQAssessment/DOVER/blob/master/onnx_inference.py).
 - 17 Jul, 2023: DOVER has been accepted by ICCV2023. We will release the DIVIDE-3k dataset to train DOVER++ via fully-supervised LVBS soon.
 - 9 Feb, 2023: **DOVER-Mobile** is available! Evaluate on CPU with Very High Speed!
 - 16 Jan, 2023: Full Training Code Available (include LVBS). See below.
@@ -29,8 +31,6 @@ Official Codes, Demos, Models for the [Disentangled Objective Video Quality Eval
 
 Corresponding video results can be found [here](https://github.com/QualityAssessment/DOVER/tree/master/figs).
 
-The first attempt to disentangle the VQA problem into aesthetic and technical quality evaluations.
-Official code for [ICCV2023] Paper *"Exploring Video Quality Assessment on User Generated Contents from Aesthetic and Technical Perspectives"*. 
 
 
 
@@ -58,8 +58,8 @@ Results comparison:
 | ----  |    ----   |   ----  |      ----     |   ----  | ---- |
 | [**DOVER**](https://github.com/QualityAssessment/DOVER/releases/download/v0.1.0/DOVER.pth) | 0.883 | 0.854 | 0.889 | 0.830 | 3.6s |
 | [**DOVER-Mobile**](https://github.com/QualityAssessment/DOVER/releases/download/v0.5.0/DOVER-Mobile.pth) | 0.853 | 0.835 | 0.867 | 0.802 | **1.4s**:rocket: |
-| BVQA (TCSVT 2022) | 0.839 | 0.824 | 0.854 | 0.791 | >300s |
-| Patch-VQ (CVPR 2021) | 0.795 | 0.807 | 0.828 | 0.739 | >100s |
+| BVQA (Li *et al*, TCSVT 2022) | 0.839 | 0.824 | 0.854 | 0.791 | >300s |
+| Patch-VQ (Ying *et al, CVPR 2021) | 0.795 | 0.807 | 0.828 | 0.739 | >100s |
 
 To switch to DOVER-Mobile, please add `-o dover-mobile.yml` at the end of any of following scripts (train, test, validate).
 
@@ -70,7 +70,7 @@ The repository can be installed via the following commands:
 ```shell
 git clone https://github.com/QualityAssessment/DOVER.git 
 cd DOVER 
-pip install .  
+pip install -e .  
 mkdir pretrained_weights 
 cd pretrained_weights 
 wget https://github.com/QualityAssessment/DOVER/releases/download/v0.1.0/DOVER.pth 
@@ -80,20 +80,41 @@ cd ..
 
 ## Evaluation: Judge the Quality of Any Video
 
+### New! ONNX Conversion is available
+
+We have now supported to convert to ONNX, which can easily be deployed to a wide range of devices.
+
+After the installation above, you can do this with a single step:
+
+```shell
+python convert_to_onnx.py
+```
+
+and try 
+
+```shell
+python onnx_inference.py -v ./demo/17734.mp4
+```
+
+to evaluate on our demo videos.
+
 ### Try on Demos
 
 
-You can run a single command to judge the quality of the demo videos in comparison with videos in VQA datasets.
+
+You can run a single command to judge the quality of the demo videos in comparison with videos in VQA datasets. 
 
 ```shell
-    python evaluate_one_video.py -v ./demo/17734.mp4
+    python evaluate_one_video.py -v ./demo/17734.mp4 -f
 ```
 
 or 
 
 ```shell
-    python evaluate_one_video.py -v ./demo/1724.mp4
+    python evaluate_one_video.py -v ./demo/1724.mp4 -f
 ```
+
+You can also remove the `-f` to get the relative aesthetic and technical ranks in common UGC-VQA databases. 
 
 
 ### Evaluate on your customized videos
@@ -103,12 +124,24 @@ Or choose any video you like to predict its quality:
 
 
 ```shell
-    python evaluate_one_video.py -v $YOUR_SPECIFIED_VIDEO_PATH$
+    python evaluate_one_video.py -v $YOUR_SPECIFIED_VIDEO_PATH$ -f
 ```
 
 ### Outputs
 
-You should get some outputs as follows. As different datasets have different scales, an absolute video quality score is useless, but the comparison on both **aesthetic** and **techincal quality** between the input video and all videos in specific sets are good indicators for how good the quality of the video is.
+#### ITU-Standarized Overall Video Quality Score
+
+The script can directly score the video's overall quality (considering both perspectives) between [0,1].
+
+```shell
+    python evaluate_one_video.py -v $YOUR_SPECIFIED_VIDEO_PATH$
+```
+
+The final output score is normalized and converted via ITU standards.
+
+#### Old-Behaviour: Relative Aesthetic/Technical Ranks
+
+You should get some outputs as follows if you remove the `-f`. As different datasets have different scales, an absolute video quality score is useless, but the comparison on both **aesthetic** and **techincal quality** between the input video and all videos in specific sets are good indicators for how good the quality of the video is.
 
 In the current version, you can get the analysis of the video's quality as follows (the normalized scores are following `N(0,1)`, so you can expect scores > 0 are related to better quality).
 
@@ -131,14 +164,6 @@ Compared with all videos in the YouTube_UGC dataset:
 -- the aesthetic quality of video [./demo/17734.mp4] is better than 80% of videos, with normalized score 0.86.
 ```
 
-### New! Get the Fused Quality Score for Use!
-
-Simply add an `-f` argument, the script now can directly score the video's quality between [0,1].
-
-```shell
-    python evaluate_one_video.py -f -v $YOUR_SPECIFIED_VIDEO_PATH$
-```
-
 
 ## Evaluate on a Set of Unlabelled Videos
 
@@ -154,8 +179,8 @@ Please feel free to use DOVER to pseudo-label your non-quality video datasets.
 
 ## Data Preparation
 
-We have already converted the labels for every dataset you will need for Blind Video Quality Assessment,
-and the download links for the videos are as follows:
+We have already converted the labels for most popular datasets you will need for Blind Video Quality Assessment,
+and the download links for the **videos** are as follows:
 
 :book: LSVQ: [Github](https://github.com/baidut/PatchVQ)
 
@@ -165,7 +190,9 @@ and the download links for the videos are as follows:
 
 :book: YouTube-UGC: [Official Site](https://media.withyoutube.com)
 
-After downloading, kindly put them under the `../datasets` or anywhere but remember to change the `data_prefix` in the [config file](dover.yml).
+*(Please contact the original authors if the download links were unavailable.)*
+
+After downloading, kindly put them under the `../datasets` or anywhere but remember to change the `data_prefix` respectively in the [config file](dover.yml).
 
 
 ## Dataset-wise Default Inference
