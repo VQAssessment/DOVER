@@ -23,8 +23,10 @@ mean, std = (
 
 
 def fuse_results(results: list):
-    a, t = (results[0] - 0.1107) / 0.07355, (results[1] + 0.08285) / 0.03774
-    x = a * 0.6104 + t * 0.3896
+    ## results[0]: aesthetic, results[1]: technical
+    ## thank @dknyxh for raising the issue
+    t, a = (results[1] - 0.1107) / 0.07355, (results[0] + 0.08285) / 0.03774
+    x = t * 0.6104 + a * 0.3896
     return {
         "aesthetic": 1 / (1 + np.exp(-a)),
         "technical": 1 / (1 + np.exp(-t)),
@@ -133,6 +135,9 @@ if __name__ == "__main__":
         #    f"dover_predictions/val-custom_{args.input_video_dir.split('/')[-1]}.pkl", "wb"
         # ) as wf:
         # pkl.dump(all_results, wf)
+        
+        with open("zero_shot_res_sensehdr.txt","a") as wf:
+            wf.write(f'{data["name"][0].split("/")[-1]},{rescaled_results["aesthetic"]*100:4f}, {rescaled_results["technical"]*100:4f},{rescaled_results["overall"]*100:4f}\n')
 
         with open(args.output_result_csv, "a") as w:
             w.write(
