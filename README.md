@@ -140,7 +140,7 @@ The final output score is normalized and converted via ITU standards.
 
 #### Old-Behaviour: Relative Aesthetic/Technical Ranks
 
-You should get some outputs as follows if you remove the `-f`. As different datasets have different scales, an absolute video quality score is useless, but the comparison on both **aesthetic** and **techincal quality** between the input video and all videos in specific sets are good indicators for how good the quality of the video is.
+You should get some outputs as follows if you remove the `-f`. As different datasets have different scales, an absolute video quality score is useless, but the comparison on both **aesthetic** and **technical quality** between the input video and all videos in specific sets are good indicators for how good the quality of the video is.
 
 In the current version, you can get the analysis of the video's quality as follows (the normalized scores are following `N(0,1)`, so you can expect scores > 0 are related to better quality).
 
