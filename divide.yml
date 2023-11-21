@@ -15,7 +15,7 @@ data:
     val-dividemaxwell:
         type: ViewDecompositionDataset
         args:
-            weight: 0.598
+            weight: 0.572
             phase: test
             anno_file: ./examplar_data_labels/DIVIDE_MaxWell/val_labels.txt
             data_prefix: ../datasets/DIVIDE_MaxWell/videos/
@@ -42,7 +42,6 @@ data:
             weight: 0.598
             phase: train
             fully_supervised: True
-
             anno_file: ./examplar_data_labels/DIVIDE_MaxWell/train_labels.txt
             data_prefix: ../datasets/DIVIDE_MaxWell/videos/
             sample_types:
