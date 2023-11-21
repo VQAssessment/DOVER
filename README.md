@@ -1,10 +1,11 @@
 # DOVER
 
 Official Code for [ICCV2023] Paper *"Exploring Video Quality Assessment on User Generated Contents from Aesthetic and Technical Perspectives"*. 
-Official Code, Demo, Weights for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894v3).
+Official Code, Demo, Weights for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894).
 
+- 21 Nov, 2023: The release note of [DIVIDE database](get_divide_dataset/) is updated. 
 - 1 Aug, 2023: ONNX conversion script for DOVER has been released. Short tip: after installation, run [this](https://github.com/VQAssessment/DOVER/blob/master/convert_to_onnx.py) and then [this](https://github.com/VQAssessment/DOVER/blob/master/onnx_inference.py).
-- 17 Jul, 2023: DOVER has been accepted by ICCV2023. We will release the DIVIDE-3k dataset to train DOVER++ via fully-supervised LVBS soon.
+- 17 Jul, 2023: DOVER has been accepted by ICCV2023.
 - 9 Feb, 2023: **DOVER-Mobile** is available! Evaluate on CPU with Very High Speed!
 - 16 Jan, 2023: Full Training Code Available (include LVBS). See below.
 - 10 Dec, 2022: Now the evaluation tool can directly predict a fused score for any video. See [here](https://github.com/QualityAssessment/DOVER#new-get-the-fused-quality-score-for-use).
