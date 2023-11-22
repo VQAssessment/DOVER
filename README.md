@@ -3,6 +3,7 @@
 Official Code for [ICCV2023] Paper *"Exploring Video Quality Assessment on User Generated Contents from Aesthetic and Technical Perspectives"*. 
 Official Code, Demo, Weights for the [Disentangled Objective Video Quality Evaluator (DOVER)](arxiv.org/abs/2211.04894).
 
+- 22 Nov, 2023: We upload weights of [DOVER](https://huggingface.co/teowu/DOVER/resolve/main/DOVER.pth?download=true) and [DOVER++](https://huggingface.co/teowu/DOVER/resolve/main/DOVER_plus_plus.pth?download=true) to Hugging Face models.
 - 21 Nov, 2023: The release note of [DIVIDE database](get_divide_dataset/) is updated. 
 - 1 Aug, 2023: ONNX conversion script for DOVER has been released. Short tip: after installation, run [this](https://github.com/VQAssessment/DOVER/blob/master/convert_to_onnx.py) and then [this](https://github.com/VQAssessment/DOVER/blob/master/onnx_inference.py).
 - 17 Jul, 2023: DOVER has been accepted by ICCV2023.
