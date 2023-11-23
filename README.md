@@ -80,6 +80,20 @@ wget https://github.com/QualityAssessment/DOVER/releases/download/v0.5.0/DOVER-M
 cd ..
 ```
 
+## Tip to Download LSVQ
+
+```python
+import os, glob
+
+snapshot_download("teowu/LSVQ-videos", repo_type="dataset", local_dir="./", local_dir_use_symlinks=False)
+
+gz_files = glob.glob("*.tar.gz")
+
+for gz_file in gz_files:
+    print(gz_file)
+    os.system("tar -xzf {}".format(gz_file))
+```
+
 ## Evaluation: Judge the Quality of Any Video
 
 ### New! ONNX Conversion is available
