@@ -1,10 +1,10 @@
-torch==2.7.1
-torchvision==0.22.*
+torch~=1.13
+torchvision
 opencv-python
-eva-decord==0.6.1
+decord
 matplotlib
 scipy
-numpy==2.0.2
+numpy
 tqdm
 timm
 einops
