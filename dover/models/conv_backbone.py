@@ -640,7 +640,7 @@ def convnextv2_huge(**kwargs):
         
 if __name__ == "__main__":
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     model = convnext_3d_tiny(True).to(device)
     print(model)
     from thop import profile
